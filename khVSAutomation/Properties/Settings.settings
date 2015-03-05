@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="khVSAutomation.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="TV1IP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.1.6</Value>
+    </Setting>
+    <Setting Name="TV2IP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.1.7</Value>
+    </Setting>
+    <Setting Name="TV1MAC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">FC:F1:52:A0:F0:56</Value>
+    </Setting>
+    <Setting Name="TV2MAC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="PROJIP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.1.5</Value>
+    </Setting>
+    <Setting Name="LIFTCOM" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">COM1</Value>
+    </Setting>
+    <Setting Name="LIFTMOVETIME" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">15000</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
