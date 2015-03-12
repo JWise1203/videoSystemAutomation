@@ -23,5 +23,8 @@
     <Setting Name="LIFTMOVETIME" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">15000</Value>
     </Setting>
+    <Setting Name="ConfigFileName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">khVSAutomation.config</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -85,5 +85,14 @@ namespace khVSAutomation.Properties {
                 return ((int)(this["LIFTMOVETIME"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("khVSAutomation.config")]
+        public string ConfigFileName {
+            get {
+                return ((string)(this["ConfigFileName"]));
+            }
+        }
     }
 }

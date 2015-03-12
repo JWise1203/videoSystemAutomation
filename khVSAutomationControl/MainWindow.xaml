@@ -1,0 +1,20 @@
+﻿<Window x:Class="khVSAutomationControl.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Video System Automation Control" Height="350" Width="525" WindowStyle="None">
+    <Grid x:Name="vsAutomationControl">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
+        <Button x:Name="btnTest" Content="Test Button" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="btnTest_Click" Grid.Column="0" Grid.Row="0"/>
+        <TextBox x:Name="txtTest" HorizontalAlignment="Left" Height="49"  TextWrapping="Wrap" Text="Test Data" VerticalAlignment="Top" Width="352" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Grid.Row="1"/>
+        <Button x:Name="btnClose" Content="X" Width="20" Click="btnClose_Click" Margin="1,0,0,1" Grid.Column="2"  Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center"/>
+    </Grid>
+</Window>

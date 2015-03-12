@@ -16,7 +16,7 @@ using khVSAutomation;
 
 using rv;
 
-using hallAutomations = khVSAutomation.Automation;
+//using hallAutomations = khVSAutomation.Automation;
 
 namespace videoSystemAutomationApp
 {
@@ -25,6 +25,7 @@ namespace videoSystemAutomationApp
         static DateTime StartTime;
 
         private static PJLinkConnection c = null;
+        private static Automation hallAutomations = null;
 
         static void Main(string[] args)
         {
@@ -33,6 +34,7 @@ namespace videoSystemAutomationApp
             Console.SetWindowSize(120, 50);
             Console.Clear();
 
+            hallAutomations = new Automation(false);
             DisplayMainUserInterface();
                   
         }
