@@ -33,15 +33,35 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Includes\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1\lib\net45\Nito.AsyncEx.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Concurrent">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1\lib\net45\Nito.AsyncEx.Concurrent.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Enlightenment">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1\lib\net45\Nito.AsyncEx.Enlightenment.dll</HintPath>
     </Reference>
     <Reference Include="PJLink">
       <HintPath>Includes\PJLink.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,6 +69,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HelperClass\SharedFunctions.cs" />
+    <Compile Include="HelperClass\Logger.cs" />
+    <Compile Include="HelperClass\Display.cs" />
+    <Compile Include="HelperClass\MatrixSwitcher.cs" />
+    <Compile Include="khData.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>khData.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="khData.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="khData.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>khData.edmx</DependentUpon>
+    </Compile>
     <Compile Include="khVSAutomation.cs" />
     <Compile Include="HelperClass\Projector.cs" />
     <Compile Include="HelperClass\ProjectorLift.cs" />
@@ -59,21 +98,72 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="HelperClass\Television.cs" />
+    <Compile Include="tblMatrixSwitcher.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="tblOperationStatu.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="tblProjector.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="tblProjectorLift.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="tblReleateProjectorAndLift.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="tblTelevision.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="tblTVCommandWhiteList.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <EntityDeploy Include="khData.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>khData.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="khData.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>khData.edmx</DependentUpon>
+      <LastGenOutput>khData.Context.cs</LastGenOutput>
+    </None>
+    <None Include="khData.edmx.diagram">
+      <DependentUpon>khData.edmx</DependentUpon>
+    </None>
+    <None Include="khData.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>khData.edmx</DependentUpon>
+      <LastGenOutput>khData.cs</LastGenOutput>
+    </None>
     <None Include="khVSAutomation.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Includes\" />
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SonyAPILib\SonyAPILib.csproj">
+      <Project>{1c3e7c3e-04f1-4c64-9a8b-5967d7eed21c}</Project>
+      <Name>SonyAPILib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Includes\Newtonsoft.Json.dll" />
+    <Content Include="Includes\PJLink.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
