@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="AutomationsModel1.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="tblMatrixSwitcher">
+          <Key>
+            <PropertyRef Name="MatrixSwitcherID" />
+          </Key>
+          <Property Name="MatrixSwitcherID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="COMPort" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="AutoOnOff" Type="bit" Nullable="false" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblOperationStatus">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SessionID" Type="varchar" MaxLength="36" Nullable="false" />
+          <Property Name="StatusID" Type="int" Nullable="false" />
+          <Property Name="Description" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblProjector">
+          <Key>
+            <PropertyRef Name="ProjectorID" />
+          </Key>
+          <Property Name="ProjectorID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="IPAddress" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="AutoOnOff" Type="bit" Nullable="false" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblProjectorLift">
+          <Key>
+            <PropertyRef Name="ProjectorLiftID" />
+          </Key>
+          <Property Name="ProjectorLiftID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="COMPort" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="AutoOnOff" Type="bit" Nullable="false" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblReleateProjectorAndLift">
+          <Key>
+            <PropertyRef Name="ProjectorID" />
+            <PropertyRef Name="ProjectorLiftID" />
+          </Key>
+          <Property Name="ProjectorID" Type="int" Nullable="false" />
+          <Property Name="ProjectorLiftID" Type="int" Nullable="false" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblTelevision">
+          <Key>
+            <PropertyRef Name="TelevisionID" />
+          </Key>
+          <Property Name="TelevisionID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="IPAddress" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="MACAddress" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="AutoOnOff" Type="bit" Nullable="false" />
+          <Property Name="CookieData" Type="nvarchar(max)" />
+          <Property Name="CommandList" Type="nvarchar(max)" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblTVCommandWhiteList">
+          <Key>
+            <PropertyRef Name="CommandID" />
+          </Key>
+          <Property Name="CommandID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="DisplayValue" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityContainer Name="AutomationsModel1StoreContainer">
+          <EntitySet Name="tblMatrixSwitcher" EntityType="Self.tblMatrixSwitcher" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblOperationStatus" EntityType="Self.tblOperationStatus" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblProjector" EntityType="Self.tblProjector" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblProjectorLift" EntityType="Self.tblProjectorLift" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblReleateProjectorAndLift" EntityType="Self.tblReleateProjectorAndLift" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblTelevision" EntityType="Self.tblTelevision" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblTVCommandWhiteList" EntityType="Self.tblTVCommandWhiteList" Schema="dbo" store:Type="Tables" />
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="AutomationsModel1" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="tblMatrixSwitcher">
+          <Key>
+            <PropertyRef Name="MatrixSwitcherID" />
+          </Key>
+          <Property Name="MatrixSwitcherID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="COMPort" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="AutoOnOff" Type="Boolean" Nullable="false" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tblOperationStatu">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="SessionID" Type="String" MaxLength="36" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="StatusID" Type="Int32" Nullable="false" />
+          <Property Name="Description" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tblProjector">
+          <Key>
+            <PropertyRef Name="ProjectorID" />
+          </Key>
+          <Property Name="ProjectorID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="IPAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="AutoOnOff" Type="Boolean" Nullable="false" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tblProjectorLift">
+          <Key>
+            <PropertyRef Name="ProjectorLiftID" />
+          </Key>
+          <Property Name="ProjectorLiftID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="COMPort" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="AutoOnOff" Type="Boolean" Nullable="false" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tblReleateProjectorAndLift">
+          <Key>
+            <PropertyRef Name="ProjectorID" />
+            <PropertyRef Name="ProjectorLiftID" />
+          </Key>
+          <Property Name="ProjectorID" Type="Int32" Nullable="false" />
+          <Property Name="ProjectorLiftID" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tblTelevision">
+          <Key>
+            <PropertyRef Name="TelevisionID" />
+          </Key>
+          <Property Name="TelevisionID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="IPAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="MACAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="AutoOnOff" Type="Boolean" Nullable="false" />
+          <Property Name="CookieData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CommandList" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tblTVCommandWhiteList">
+          <Key>
+            <PropertyRef Name="CommandID" />
+          </Key>
+          <Property Name="CommandID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="DisplayValue" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityContainer Name="AutomationsEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tblMatrixSwitchers" EntityType="Self.tblMatrixSwitcher" />
+          <EntitySet Name="tblOperationStatus" EntityType="Self.tblOperationStatu" />
+          <EntitySet Name="tblProjectors" EntityType="Self.tblProjector" />
+          <EntitySet Name="tblProjectorLifts" EntityType="Self.tblProjectorLift" />
+          <EntitySet Name="tblReleateProjectorAndLifts" EntityType="Self.tblReleateProjectorAndLift" />
+          <EntitySet Name="tblTelevisions" EntityType="Self.tblTelevision" />
+          <EntitySet Name="tblTVCommandWhiteLists" EntityType="Self.tblTVCommandWhiteList" />
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="AutomationsModel1StoreContainer" CdmEntityContainer="AutomationsEntities">
+          <EntitySetMapping Name="tblMatrixSwitchers">
+            <EntityTypeMapping TypeName="AutomationsModel1.tblMatrixSwitcher">
+              <MappingFragment StoreEntitySet="tblMatrixSwitcher">
+                <ScalarProperty Name="MatrixSwitcherID" ColumnName="MatrixSwitcherID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="COMPort" ColumnName="COMPort" />
+                <ScalarProperty Name="AutoOnOff" ColumnName="AutoOnOff" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblOperationStatus">
+            <EntityTypeMapping TypeName="AutomationsModel1.tblOperationStatu">
+              <MappingFragment StoreEntitySet="tblOperationStatus">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="StatusID" ColumnName="StatusID" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblProjectors">
+            <EntityTypeMapping TypeName="AutomationsModel1.tblProjector">
+              <MappingFragment StoreEntitySet="tblProjector">
+                <ScalarProperty Name="ProjectorID" ColumnName="ProjectorID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="IPAddress" ColumnName="IPAddress" />
+                <ScalarProperty Name="AutoOnOff" ColumnName="AutoOnOff" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblProjectorLifts">
+            <EntityTypeMapping TypeName="AutomationsModel1.tblProjectorLift">
+              <MappingFragment StoreEntitySet="tblProjectorLift">
+                <ScalarProperty Name="ProjectorLiftID" ColumnName="ProjectorLiftID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="COMPort" ColumnName="COMPort" />
+                <ScalarProperty Name="AutoOnOff" ColumnName="AutoOnOff" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblReleateProjectorAndLifts">
+            <EntityTypeMapping TypeName="AutomationsModel1.tblReleateProjectorAndLift">
+              <MappingFragment StoreEntitySet="tblReleateProjectorAndLift">
+                <ScalarProperty Name="ProjectorID" ColumnName="ProjectorID" />
+                <ScalarProperty Name="ProjectorLiftID" ColumnName="ProjectorLiftID" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblTelevisions">
+            <EntityTypeMapping TypeName="AutomationsModel1.tblTelevision">
+              <MappingFragment StoreEntitySet="tblTelevision">
+                <ScalarProperty Name="TelevisionID" ColumnName="TelevisionID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="IPAddress" ColumnName="IPAddress" />
+                <ScalarProperty Name="MACAddress" ColumnName="MACAddress" />
+                <ScalarProperty Name="AutoOnOff" ColumnName="AutoOnOff" />
+                <ScalarProperty Name="CookieData" ColumnName="CookieData" />
+                <ScalarProperty Name="CommandList" ColumnName="CommandList" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblTVCommandWhiteLists">
+            <EntityTypeMapping TypeName="AutomationsModel1.tblTVCommandWhiteList">
+              <MappingFragment StoreEntitySet="tblTVCommandWhiteList">
+                <ScalarProperty Name="CommandID" ColumnName="CommandID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="DisplayValue" ColumnName="DisplayValue" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

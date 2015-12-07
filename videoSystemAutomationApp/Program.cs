@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
 
 using System.Collections;
 using System.Collections.Specialized;
@@ -11,26 +12,20 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 using Newtonsoft.Json;
+using khVSAutomation;
 
 using rv;
+
+//using hallAutomations = khVSAutomation.Automation;
 
 namespace videoSystemAutomationApp
 {
     class Program
     {
-        private static readonly string tv1IPAddress = "192.168.1.6";
-        private static readonly string tv1MACAddress = "FC:F1:52:A0:F0:56";
-        private static readonly string tv2IPAddress = "192.168.1.7";
-        private static readonly string tv2MACAddress = "";
-        private static readonly string projectorIPAddress = "192.168.1.5";
-        private static readonly string liftCOMPort = "COM1";
-        private static readonly int liftMovementTime = 15000;
-
         static DateTime StartTime;
 
         private static PJLinkConnection c = null;
-
-
+        private static Automation hallAutomations = null;
 
         static void Main(string[] args)
         {
@@ -39,11 +34,11 @@ namespace videoSystemAutomationApp
             Console.SetWindowSize(120, 50);
             Console.Clear();
 
-
-                DisplayMainUserInterface();  
+            //Set the LogLevel To All For Testing Purposes - We can back it down later
+            hallAutomations = new Automation(false, logLevel.All);
+            DisplayMainUserInterface();
+                  
         }
-
-
 
         private static void DisplayMainUserInterface()
         {
@@ -51,6 +46,8 @@ namespace videoSystemAutomationApp
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
             StringDictionary OperationStringList = new StringDictionary();
+            //Convert.ToDateTime(bal[0].Expires
+            //1447377013662-0500
 
             OperationStringList.Add("A", "Turn on system");
             OperationStringList.Add("B", "Turn off system");
@@ -58,6 +55,10 @@ namespace videoSystemAutomationApp
             OperationStringList.Add("D", "Power On TV");
             OperationStringList.Add("E", "In Progress - Power Off TV");
             OperationStringList.Add("F", "Register App with TV");
+            //OperationStringList.Add("G", "Register App with TV (Automatic)"); --This did not work as expected
+            OperationStringList.Add("H", "Send Command");
+            OperationStringList.Add("X", "Switch Matrix Source");
+            OperationStringList.Add("Y", "Check Current Settings");
             OperationStringList.Add("Z", "Exit application");
 
             Console.WriteLine("");
@@ -126,58 +127,6 @@ namespace videoSystemAutomationApp
             System.Environment.Exit(1);
         }
 
-        internal static bool ConfirmOperation(int Function)
-        {
-            string line;
-
-            while (true)
-            {
-                Console.WriteLine("");
-
-                switch (Function)
-                {
-                    case 1:
-                        Console.Write("Are you sure you wish to execute this command? (Y/N): ");
-                        break;
-                    case 2:
-                        Console.Write("Change network for each vApp in deployment collection? (Y/N): ");
-                        break;
-                    case 3:
-                        Console.Write("Save configuration(s) state? (Y/N): ");
-                        break;
-                    case 4:
-                        Console.Write("Deploy instructor and test student vApps? (Y/N): ");
-                        break;
-                    case 5:
-                        Console.Write("Change power state for instructor vApp? (Y/N): ");
-                        break;
-                    case 6:
-                        Console.Write("Deploy vApps to existing vDC? (Y/N): ");
-                        break;
-                    case 7:
-                        Console.Write("Snapshot vApp after deployment? (Y/N): ");
-                        break;
-                    case 8:
-                        Console.Write("Would you like to create the instructor account? (Y/N): ");
-                        break;
-                    case 9:
-                        Console.Write("Would you like to copy the deployment report to the clipboard? (Y/N): ");
-                        break;
-                }
-
-                line = Console.ReadLine();
-
-                if (line == "Y" | line == "y" | line == "N" | line == "n")
-                    break;
-            }
-
-            if (line == "Y" | line == "y")
-                return true;
-            else
-                return false;
-        }
-
-
         private static void OperationLogicProcessor(String operation)
         {
             try
@@ -195,22 +144,122 @@ namespace videoSystemAutomationApp
                         RunAnotherOperation();
                         break;
                     case "C":
-                        printProjectorStatus();
+                        Console.Write(hallAutomations.printProjectorStatus());
 
                         RunAnotherOperation();
                         break;
                     case "D":
-                        WakeupTV(tv1MACAddress);
+                        for (int i = 1; i <= hallAutomations.NumberOfTelevisions; i++ )
+                        {
+                            if (i != 1)
+                            {
+                                Console.Write("Attempting to wake up tv " + i);
+                                Console.Write(hallAutomations.WakeupTV(i));
+                            }
+                        }
+                            
 
                         RunAnotherOperation();
                         break;
                     case "E":
-                        PowerOffTV();
-
+                        for (int i = 1; i <= hallAutomations.NumberOfTelevisions; i++)
+                        {
+                            if (i != 1)
+                            {
+                                Console.Write("Attempting to power off tv " + i);
+                                Console.Write(hallAutomations.PowerOffTV(i));
+                            }
+                        }
                         RunAnotherOperation();
                         break;
                     case "F":
                         RegisterTV();
+                        
+                        RunAnotherOperation();
+                        break;
+                    //Auto Registration did not work during testing.
+                    //case "G":
+                    //    //TODO: might have to split this function up to get it working in the khAutomations dll
+                    //    List<string> l_strAvailTVs2 = hallAutomations.getAvailableDeviceInfo(DeviceTypes.Television);
+
+                    //    //What Television do we need to register?
+                    //    if (l_strAvailTVs2.Count > 0)
+                    //    {
+                    //        foreach (string l_strTVInfo in l_strAvailTVs2)
+                    //        {
+                    //            string[] l_astrTVInfo = l_strTVInfo.Split('|');
+                    //            Console.WriteLine("Enter {0} for {1}", l_astrTVInfo[0], l_astrTVInfo[1]);
+                    //        }
+                    //        Console.WriteLine("");
+                    //        int iTVID = Int32.Parse(Console.ReadLine());
+
+
+                    //        StringBuilder l_objProgress = new StringBuilder();
+
+                    //        var l_objStatus = hallAutomations.RegisterTV1Step(iTVID, l_objProgress);
+                    //        Console.Write(l_objProgress.ToString());
+                    //    }
+                    //    else Console.WriteLine("Registration Cancelled - There are currently no Televisions setup in the configuration file.");
+
+                    //    RunAnotherOperation();
+                    //    break;
+                    case "H":
+                        List<string> l_strAvailTVs3 = hallAutomations.getAvailableDeviceInfo(DeviceTypes.Television);
+
+                        if (l_strAvailTVs3.Count > 0)
+                        {
+                            foreach (string l_strTVInfo in l_strAvailTVs3)
+                            {
+                                string[] l_astrTVInfo = l_strTVInfo.Split('|');
+                                Console.WriteLine("Enter {0} for {1}", l_astrTVInfo[0], l_astrTVInfo[1]);
+                            }
+                            Console.WriteLine("");
+                            int iTVID = Int32.Parse(Console.ReadLine());
+                            Console.WriteLine("Please Paste Command");
+                            string strCommand = Console.ReadLine();
+                            StringBuilder l_objProgress = new StringBuilder();
+
+                            var l_objStatus = hallAutomations.TestCommands(strCommand, iTVID,l_objProgress);
+                            Console.Write(l_objProgress.ToString());
+                        }
+                        else Console.WriteLine("Registration Cancelled - There are currently no Televisions setup in the configuration file.");
+
+                        RunAnotherOperation();
+
+
+                         for (int i = 1; i <= hallAutomations.NumberOfTelevisions; i++)
+                        {
+                            if (i == 1)
+                            {
+                                Console.Write("Attempting to power off tv " + i);
+                                Console.Write(hallAutomations.PowerOffTV(i));
+                            }
+                        }
+                        RunAnotherOperation();
+                        break;
+                    case "X" :
+                        var l_intOutput = -1;
+                        do
+                        {
+                            Console.Write("Please select an Output # (1-4): ");
+                            try { l_intOutput = int.Parse(Console.ReadLine()); }
+                            catch { l_intOutput = -1; }
+                        } while (l_intOutput < 1 || l_intOutput > 4);
+
+                        var l_intSource = -1;
+                        do
+                        {
+                            Console.Write("Please select a Source # (1-4): ");
+                            try { l_intSource = int.Parse(Console.ReadLine()); }
+                            catch { l_intSource = -1; }
+                        } while (l_intSource < 1 || l_intSource > 4);
+
+                        switchMatrixSource((SwitcherOutput)l_intOutput, (SwitcherAction)l_intSource);
+
+                        RunAnotherOperation();
+                        break;
+                    case "Y" :
+                        Console.Write(hallAutomations.displaySettings());
 
                         RunAnotherOperation();
                         break;
@@ -232,455 +281,126 @@ namespace videoSystemAutomationApp
             }
         }
 
-        private static void sendSerialData(string COMPort, int baudRate, System.IO.Ports.Parity paritySetting, int dataBits, System.IO.Ports.StopBits stopBits, string dataToSend)
+        private static void RegisterTV()
         {
-            System.IO.Ports.SerialPort liftSerialPort = new System.IO.Ports.SerialPort(COMPort, baudRate, paritySetting, dataBits, stopBits);
-            
-            try
+            List<string> l_strAvailTVs = hallAutomations.getAvailableDeviceInfo(DeviceTypes.Television);
+
+            //What Television do we need to register?
+            if (l_strAvailTVs.Count > 0)
             {
-                liftSerialPort.Open();
-                liftSerialPort.WriteLine(dataToSend);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                liftSerialPort.Close();
-            }
-        }
+                foreach (string l_strTVInfo in l_strAvailTVs)
+                {
+                    string[] l_astrTVInfo = l_strTVInfo.Split('|');
+                    Console.WriteLine("Enter {0} for {1}", l_astrTVInfo[0], l_astrTVInfo[1]);
+                }
+                Console.WriteLine("");
+                int iTVID = Int32.Parse(Console.ReadLine());
 
 
+                StringBuilder l_objProgress = new StringBuilder();
 
-        private static void cancelProjectorLiftMove()
-        {
-            try
-            {
-                sendSerialData(liftCOMPort, 9600, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One, ">0500037D\r");
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
+                Console.WriteLine("Performing Registration....");
+                Console.WriteLine("Before continuing, you may need to set the device to Registration Mode,");
+                Console.WriteLine("Confirm Registration or enter the Registration PIN code.");
+                Console.WriteLine("Go to the device and perfrom any step, or be ready to before ehitting enter below!");
+                Console.WriteLine("=====================================");
+                Console.WriteLine("Hit any key to continue");
+                Console.ReadKey();
 
-        private async static void extendProjectorLift()
-        {
-            try
-            {
-                sendSerialData(liftCOMPort, 9600, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One, ">0500107B\r");
-                await Task.Delay(liftMovementTime);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
+                var l_blnPinRequired = true;
+                var l_objStatus = hallAutomations.registerTV_Part1(ref l_blnPinRequired ,iTVID, l_objProgress);
+                Console.Write(l_objProgress.ToString());
 
-        private async static void retractProjectorLift()
-        {
-            try
-            {
-                sendSerialData(liftCOMPort, 9600, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One, ">0500127D\r");
-                await Task.Delay(liftMovementTime);
+
+                if (l_objStatus == actionStatus.Success && l_blnPinRequired )
+                {
+                    l_objProgress.Clear();
+                    Console.WriteLine("Please Enter the PIN Code Displayed on the TV... OR Enter 'S' to skip this step.");
+                    var l_strPIN = Console.ReadLine();
+                    // Send PIN code to TV to create Autorization cookie
+                    if (!l_strPIN.Equals("S", StringComparison.OrdinalIgnoreCase) && l_strPIN.Trim().Length > 0)
+                    {
+                        Console.WriteLine("Sending Authentication PIN Code. ");
+
+                        l_objStatus = hallAutomations.registerTV_Part2(l_strPIN, iTVID, l_objProgress);
+
+                        //This was my attempt at doing this all within one step without user action - It did not work.
+                        //Console.WriteLine("I'm Going to Try 1914 instead");
+                        //l_objStatus = hallAutomations.registerTV_Part2("1914", iTVID, l_objProgress);
+                        //l_objStatus = hallAutomations.RegisterTV1Step(iTVID, l_objProgress);
+                        Console.Write(l_objProgress.ToString());
+                    }
+                    else
+                    {
+                        Console.Write("Part 2 of registration process skipped.");
+                    }
+                }
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            else Console.WriteLine("Registration Cancelled - There are currently no Televisions setup in the configuration file.");
         }
 
         private static void turnOnSystem()
         {
-            try 
+            //TODO: NEED TO CREATE A MESSAGEBUS OR SOMETHING TO GIVE THE USER REALTIME UPDATES
+
+            StringBuilder l_objProgress = new StringBuilder();
+            actionStatus l_objStatus = actionStatus.None;
+
+            //Currently there are multiple TV's, but only one projector and lift.
+            l_objStatus = hallAutomations.turnSystemOn(p_intTVID : 99, p_objProgress : l_objProgress);
+            Console.Write(l_objProgress.ToString());
+
+            switch (l_objStatus)
             {
-                Console.WriteLine("Powering on TV...");
-                WakeupTV(tv1MACAddress);
-
-                switch (checkProjectorPowerStatus())
-                {
-                    case "OFF":
-                        Console.WriteLine("Lowering projector lift...");
-                        extendProjectorLift();
-
-                        Console.WriteLine("Powering on projector...");
-                        turnOnProjector();
-
-                        break;
-
-                    case "ON":
-                        break;
-
-                    case "UNKNOWN":
-                        goto case "OFF";
-                }
-
-                Console.WriteLine("Waiting for projector to power on and warmup...");
-
-                //Wait until projector is fully powered on
-                while (checkProjectorPowerStatus() != "ON")
-                {
-                    System.Threading.Thread.Sleep(750); // pause for 3/4 second;
-                    Console.WriteLine("Current Projector Status: " + getProjectorStatus());
-                }
-
-                Console.WriteLine("Pausing for 5 seconds...");
-                System.Threading.Thread.Sleep(5000);
-                Console.WriteLine("Changing projector source to HDMI...");
-                changeProjectorToHDMI();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+                case actionStatus.Success:
+                    Console.WriteLine("The System has been turned on successfully.");
+                    break;
+                default:
+                    Console.WriteLine("Something went wrong. Please check the logs for more details.\nIf this issue persists, please contact the system administrator");
+                    break;
+            }   
         }
 
 
         private static void turnOffSystem()
         {
-            switch (checkProjectorPowerStatus())
+            StringBuilder l_objProgress = new StringBuilder();
+            actionStatus l_objStatus = actionStatus.None;
+            l_objStatus = hallAutomations.turnSystemOff(p_intTVID: 99, p_objProgress: l_objProgress);
+            Console.Write(l_objProgress.ToString());
+
+            switch (l_objStatus)
             {
-                case "OFF":
+                case actionStatus.Success:
+                    Console.WriteLine("The System has been successfully turned off.");
                     break;
-
-                case "ON":
-                    Console.WriteLine("Powering off projector...");
-                    turnOffProjector();
+                default:
+                    Console.WriteLine("Something went wrong. Please check the logs for more details.\nIf this issue persists, please contact the system administrator");
                     break;
-
-                case "UNKNOWN":
-                    goto case "ON";
             }
-
-            Console.WriteLine("Waiting for projector to power off and cooldown...");
-
-            //Wait until projector is fully powered off
-            while (checkProjectorPowerStatus() != "UNKNOWN")
-            {
-                System.Threading.Thread.Sleep(750); // pause for 1/4 second;
-                Console.WriteLine("Current Projector Status: " + getProjectorStatus());
-            }
-
-            //Retract projector lift
-            Console.WriteLine("Retracting projector lift...");
-            retractProjectorLift();
-
-            //TODO Figure out how to power off TVs
-            Console.WriteLine("Powering off TV...");
-            //Power off TV Here!
         }
 
-        private static void RegisterTV()
+        private static void switchMatrixSource(SwitcherOutput p_objOutput, SwitcherAction p_objSource)
         {
-            CookieContainer allcookies = new CookieContainer();
-
-            string hostname = System.Environment.MachineName;
-            string jsontosend = "{\"id\":13,\"method\":\"actRegister\",\"version\":\"1.0\",\"params\":[{\"clientid\":\"" + hostname + ":34c43339-af3d-40e7-b1b2-743331375368c\",\"nickname\":\"" + hostname + " (Mendel's APP)\"},[{\"clientid\":\"" + hostname + ":34c43339-af3d-40e7-b1b2-743331375368c\",\"value\":\"yes\",\"nickname\":\"" + hostname + " (Mendel's APP)\",\"function\":\"WOL\"}]]}";
-
-            try
+            StringBuilder l_objProgress = new StringBuilder();
+            Console.WriteLine("Attempting to Switch Source");
+            if (hallAutomations.NumberOfSwitchers > 0)
             {
-                var httpWebRequest = (HttpWebRequest)WebRequest.Create(" http://" + tv1IPAddress + "/sony/accessControl");
-                httpWebRequest.ContentType = "application/json";
-                httpWebRequest.Method = "POST";
-                httpWebRequest.AllowAutoRedirect = true;
-                httpWebRequest.Timeout = 500;
+                var l_objStatus = hallAutomations.changeMatrixSource(1, p_objOutput, p_objSource, l_objProgress);
+                Console.Write(l_objProgress.ToString());
 
-                using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                switch (l_objStatus)
                 {
-                    streamWriter.Write(jsontosend);
+                    case actionStatus.Success:
+                        Console.WriteLine("The Source has been successfully Been Switched.");
+                        break;
+                    default:
+                        Console.WriteLine("Something went wrong. Please check the logs for more details.\nIf this issue persists, please contact the system administrator");
+                        break;
                 }
-
-                try
-                {
-                    httpWebRequest.GetResponse();
-                }
-
-                catch { }
-            }
-
-            catch { Console.WriteLine("device not reachable!"); }
-
-            Console.Write("Please enter PIN that is displayed on TV: \n");
-            string pincode = Console.ReadLine();
-
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("Continuing...");
-            Console.WriteLine("");
-            Console.WriteLine("");
-
-            try
-            {
-                var httpWebRequest2 = (HttpWebRequest)WebRequest.Create(" http://" + tv1IPAddress + "/sony/accessControl");
-                httpWebRequest2.ContentType = "application/json";
-                httpWebRequest2.Method = "POST";
-                httpWebRequest2.AllowAutoRedirect = true;
-                httpWebRequest2.CookieContainer = allcookies;
-                httpWebRequest2.Timeout = 500;
-
-                using (var streamWriter = new StreamWriter(httpWebRequest2.GetRequestStream()))
-                {
-                    streamWriter.Write(jsontosend);
-                }
-
-                string authInfo = "" + ":" + pincode;
-                authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-                httpWebRequest2.Headers["Authorization"] = "Basic " + authInfo;
-
-                var httpResponse = (HttpWebResponse)httpWebRequest2.GetResponse();
-
-
-                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                {
-                    var responseText = streamReader.ReadToEnd();
-                    Console.WriteLine("Response Text: " + responseText);
-                }
-
-                //write register cookie to file!
-                string answerCookie = JsonConvert.SerializeObject(httpWebRequest2.CookieContainer.GetCookies(new Uri("http://" + tv1IPAddress + "/sony/appControl")));
-
-                // Write the string to a file.
-                System.IO.StreamWriter file = new System.IO.StreamWriter("cookie.json");
-                file.WriteLine(answerCookie);
-                file.Close();
-
-                Console.WriteLine("Cookie: " + answerCookie);
-
-            }
-
-            catch { Console.WriteLine("timeout!"); }
-        }
-
-        private static void PowerOffTV()
-        {
-            string hostname = System.Environment.MachineName;
-
-            Console.WriteLine("Powering off TV...");
-
-            HttpWebRequest request = (HttpWebRequest)
-            HttpWebRequest.Create("http://" + tv1IPAddress + "/sony/IRCC");
-
-            string xmlString = "<?xml version=\"1.0\"?>";
-            xmlString += "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">";
-            xmlString += "<s:Body>";
-            xmlString += "<u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\">";
-            xmlString += "<IRCCCode>AAAAAQAAAAEAAAAvAw==</IRCCCode>";
-            xmlString += "</u:X_SendIRCC>";
-            xmlString += "</s:Body>";
-            xmlString += "</s:Envelope>";
-
-            ASCIIEncoding encoding = new ASCIIEncoding();
-
-            byte[] bytesToWrite = encoding.GetBytes(xmlString);
-
-            request.Method = "POST";
-            request.ContentLength = bytesToWrite.Length;
-            request.Headers.Add("SOAPAction: \"urn:schemas-sony-com:service:IRCC:1#X_SendIRCC\"");
-            request.ContentType = "text/xml; charset=utf-8";
-            request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-
-            Stream newStream = request.GetRequestStream();
-            newStream.Write(bytesToWrite, 0, bytesToWrite.Length);
-            newStream.Close();
-
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream dataStream = response.GetResponseStream();
-            StreamReader reader = new StreamReader(dataStream);
-
-            string responseFromServer = reader.ReadToEnd();
-
-            Console.WriteLine(responseFromServer);
-
-
-            ////string jsontosend = "{\"id\":20,\"result\":[{\"bundled\":true,\"type\":\"RM-J1100\"},[{\"name\":\"PowerOff\",\"value\":\"AAAAAQAAAAEAAAAvAw==\"}";
-
-            ////string jsontosend = "{\"id\":20,\"method\":\"getRemoteControllerInfo\",\"version\":\"1.0\",\"params\":[]}";
-            ////string jsontosend = "{\"name\":\"PowerOff\",\"value\":\"AAAAAQAAAAEAAAAvAw==\"}";
-
-            //string content = "<?xml version=\"1.0\"?>";
-            //content += "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">";
-            //content += "<s:Body>";
-            //content += "<u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\">";
-            //content += "<IRCCCode>AAAAAQAAAAEAAAAvAw==</IRCCCode>";
-            //content += "</u:X_SendIRCC>";
-            //content += "</s:Body>";
-            //content += "</s:Envelope>";
-
-            //try
-            //{
-            //    var httpWebRequest = (HttpWebRequest)WebRequest.Create(" http://" + tv1IPAddress + "/sony/IRCC");
-            //    //httpWebRequest.ContentType = "application/json";
-            //    httpWebRequest.ContentType = "text/xml; charset=\"utf-8\"";
-            //    httpWebRequest.Method = "POST";
-            //    httpWebRequest.AllowAutoRedirect = true;
-            //    httpWebRequest.Timeout = 500;
-
-            //    using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-            //    {
-            //        streamWriter.Write(content);
-            //    }
-
-            //    try
-            //    {
-            //        httpWebRequest.GetResponse();
-
-            //        var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-
-            //        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            //        {
-            //            var responseText = streamReader.ReadToEnd();
-            //            Console.WriteLine("Response Text: " + responseText);
-            //        }
-            //    }
-
-            //    catch (Exception e)
-            //    {
-            //        Console.WriteLine(e.Message);
-            //    }
-            //}
-
-            //catch { Console.WriteLine("timeout!"); }
-        }
-
-        private static string WakeupTV(string macAddress)
-        {
-            Byte[] datagram = new byte[102];
-
-            for (int i = 0; i <= 5; i++)
-            {
-                datagram[i] = 0xff;
-            }
-
-            string[] macDigits = null;
-            if (macAddress.Contains("-"))
-            {
-                macDigits = macAddress.Split('-');
             }
             else
-            {
-                macDigits = macAddress.Split(':');
-            }
-
-            if (macDigits.Length != 6)
-            {
-                throw new ArgumentException("Incorrect MAC address supplied!");
-            }
-
-            int start = 6;
-            for (int i = 0; i < 16; i++)
-            {
-                for (int x = 0; x < 6; x++)
-                {
-                    datagram[start + i * 6 + x] = (byte)Convert.ToInt32(macDigits[x], 16);
-                }
-            }
-
-            UdpClient client = new UdpClient();
-            client.Send(datagram, datagram.Length, "255.255.255.255", 3);
-
-            return "Command Sent!";
-        }
-
-        private static void connectToProjector()
-        {
-            System.Net.IPAddress address = null;
-
-            if (System.Net.IPAddress.TryParse(projectorIPAddress, out address))
-            {
-                c = new PJLinkConnection(projectorIPAddress, "JBMIAProjectorLink");
-            }
-
-            else
-            {
-                Console.WriteLine("Invalid IP Address Entered");
-            }
-        }
-
-        private static string getProjectorStatus()
-        {
-            return c.powerQuery().ToString();
-        }
-
-        private static void printProjectorStatus()
-        {
-            LampStatusCommand l = new LampStatusCommand();
-            //int hours = l.getHoursOfLamp(1);
-            string status = l.getStatusOfLamp(1).ToString();
-
-            //Connect to projector, if not currently connected
-            if(c == null)
-            {
-                connectToProjector();
-            }
-
-            string power = c.powerQuery().ToString();
-            ProjectorInfo pi = new ProjectorInfo();
-
-            Console.WriteLine("Connection Status: Connected");
-            Console.WriteLine("");
-            Console.WriteLine("Power Status: " + power);
-            Console.WriteLine("Fan Status: " + pi.FanStatus);
-            Console.WriteLine("Lamp Status: " + pi.LampStatus);
-            Console.WriteLine("Current Source Input: " + pi.Input);
-            Console.WriteLine("Cover Status: " + pi.CoverStatus);
-            Console.WriteLine("Filter Status: " + pi.FilterStatus);
-            Console.WriteLine("");
-        }
-
-        private static void turnOnProjector()
-        {
-            if (c == null)
-            {
-                connectToProjector();
-            }
-
-            Console.WriteLine("Turning Projector On");
-            c.turnOn();
-            Console.WriteLine("Projector is now:" + c.powerQuery().ToString());
-        }
-
-        private static void turnOffProjector()
-        {
-            if (c == null)
-            {
-                connectToProjector();
-            }
-
-            Console.WriteLine("Turning Projector Off");
-            c.turnOff();
-            Console.WriteLine("Projector is now:" + c.powerQuery().ToString());
-        }
-
-        private static void change_Input(rv.InputCommand.InputType x, int i)
-        {
-            InputCommand ic2 = new InputCommand(x, i);
-
-            if (c.sendCommand(ic2) == Command.Response.SUCCESS)
-                Console.WriteLine(ic2.dumpToString());
-            else
-                Console.WriteLine("Communication Error");
-
-        }
-
-        private static void changeProjectorToHDMI()
-        {
-            change_Input(InputCommand.InputType.DIGITAL, 1);
-        }
-
-        private static void changeProjectorToVGA()
-        {
-            change_Input(InputCommand.InputType.RGB, 1);
-        }
-
-        private static string checkProjectorPowerStatus()
-        {
-            if (c == null)
-            {
-                connectToProjector();
-            }
-
-            return c.powerQuery().ToString();
+                Console.WriteLine("Action Cannot be Performed: There are No Matrix Switchers Configured!");         
         }
     }
 }
