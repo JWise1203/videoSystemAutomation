@@ -81,7 +81,8 @@ namespace khVSAutomation
         private static List<Television> m_objTelevisions = null;
         private static List<ProjectorLift> m_objProjectorLifts = null;
         private static List<MatrixSwitcher> m_objMatrixSwitchers = null;
-        private static string m_strPublicTelevisionInfo;
+        
+        //private static string m_strPublicTelevisionInfo;
         private static string m_strPublicProjectorInfo;
         private static string m_strPublicSwitcherInfo;
 
@@ -100,9 +101,14 @@ namespace khVSAutomation
         public int NumberOfSwitchers { get { return m_objMatrixSwitchers.Count(); } }
 
         //Properties Carry General Information to the UI: [ID;Name|ID;Name]
-        public string AllTelevisions { get { return m_strPublicTelevisionInfo; } }
-        public string AllProjectors { get { return m_strPublicProjectorInfo; } }
-        public string AllSwitchers { get { return m_strPublicSwitcherInfo; } }
+        public List<string> AllTelevisions { get { return m_lstPublicTelevisionInfo; } }
+        public List<string> AllProjectors { get { return m_lstPublicProjectorInfo; } }
+        public List<string> AllProjectorLifts { get { return m_lstPublicProjectorLiftInfo; } }
+        public List<string> AllSwitchers { get { return m_lstPublicSwitcherInfo; } }
+        private static List<string> m_lstPublicTelevisionInfo;
+        private static List<string> m_lstPublicProjectorInfo;
+        private static List<string> m_lstPublicProjectorLiftInfo;
+        private static List<string> m_lstPublicSwitcherInfo;
 
         public Automation(bool p_blnWinForm = false, logLevel p_objLogLevel = logLevel.ErrorOnly)
         {
@@ -118,51 +124,53 @@ namespace khVSAutomation
             m_objLogLevel = p_objLogLevel;
             myDB = new AutomationsEntities();
             m_objLogger = new Logger(ref myDB, m_cstrSessionID, m_objLogLevel);
+            actionStatus l_objStatus = actionStatus.None;
 
             var l_strFunctionName = "loadConfigurations()";
             try
             {
-                m_objLogger.logToMemory("New Session Started: " + m_cstrSessionID + Environment.NewLine + "Loading Configurations");
+                m_objLogger.logToMemory(string.Format("{0}: New Session Started: {1}.", l_strFunctionName, m_cstrSessionID));
+                m_objLogger.logToMemory("Loading Configurations");
 
                 //Initialize the Modular Lists
                 m_objTelevisions = new List<Television>();
                 m_objProjectors = new List<Projector>();
                 m_objProjectorLifts = new List<ProjectorLift>();
                 m_objMatrixSwitchers = new List<MatrixSwitcher>();
+                m_lstPublicProjectorInfo = new List<string>();
+                m_lstPublicProjectorLiftInfo = new List<string>();
+                m_lstPublicSwitcherInfo = new List<string>();
+                m_lstPublicTelevisionInfo = new List<string>();
 
                 //Get the items from the DB Televisions from the DB and add them to the List
                 var l_objTelevisions = (from tv in myDB.tblTelevisions
                                         orderby tv.TelevisionID
                                         select tv).ToList();
-                m_objLogger.logToMemory("Television Count: " + l_objTelevisions.Count());
+                m_objLogger.logToMemory(string.Format("{0}: Television Count: {1}", l_strFunctionName, l_objTelevisions.Count()));
 
                 var l_objProjectors = (from proj in myDB.tblProjectors
                                        orderby proj.ProjectorID
                                        select proj).ToList();
-                m_objLogger.logToMemory("Projector Count: " + l_objProjectors.Count());
+                m_objLogger.logToMemory(string.Format("{0}: Projector Count: {1}", l_strFunctionName, l_objProjectors.Count()));
 
                 var l_objProjectorLifts = (from lifts in myDB.tblProjectorLifts
                                            orderby lifts.ProjectorLiftID
                                            select lifts).ToList();
-                m_objLogger.logToMemory("Projector Lift Count: " + l_objProjectorLifts.Count());
+                m_objLogger.logToMemory(string.Format("{0}: Projector Lift Count: {1}", l_strFunctionName, l_objProjectorLifts.Count()));
 
                 var l_objMatrixSwitchers = (from switchers in myDB.tblMatrixSwitchers
                                            orderby switchers.MatrixSwitcherID
                                            select switchers).ToList();
-                m_objLogger.logToMemory("Matrix Switcher Count: " + l_objMatrixSwitchers.Count());
-                //Place the Items into the Modular Lists for future operations
+                m_objLogger.logToMemory(string.Format("{0}: Matrix Switcher Count: {1}", l_strFunctionName, l_objMatrixSwitchers.Count()));
 
-                var strTemp = "";
                 //TVs
                 foreach (var tv in l_objTelevisions)
                 {
                     m_objTelevisions.Add(new Television(tv, m_cstrSessionID, m_objLogLevel)); //m_objTelevisions.Add(new Television(tv.Name, tv.IPAddress, tv.MACAddress, m_cstrSessionID, tv.CookieData, tv.CommandList, tv, m_objLogLevel));
-                    strTemp += tv.Name + ";" + tv.TelevisionID + "|";
+                    m_lstPublicTelevisionInfo.Add(string.Format("{0};{1}", tv.Name, tv.TelevisionID));
                 }
-                m_strPublicTelevisionInfo = (strTemp.Length > 0 ? strTemp.Substring(0, (strTemp.Length - 1)) : "");
-
+                
                 //Projectors
-                strTemp = "";
                 foreach (var proj in l_objProjectors)
                 {
                     var l_objLiftAssociations = (from relate in myDB.tblReleateProjectorAndLifts
@@ -170,41 +178,32 @@ namespace khVSAutomation
                                             where relate.ProjectorID == proj.ProjectorID
                                             select new { ProjectorID = proj.ProjectorID, LiftID = lifts.ProjectorLiftID, LiftAssociation = lifts.Name }).ToList();
                     m_objProjectors.Add(new Projector(proj.Name, proj.IPAddress, (l_objLiftAssociations.Count() >= 1? l_objLiftAssociations[0].LiftAssociation : ""), m_cstrSessionID, m_objLogLevel));
-
-                    strTemp += proj.Name + ";" + proj.ProjectorID + "|";
+                    m_lstPublicProjectorInfo.Add(string.Format("{0};{1}", proj.Name, proj.ProjectorID));
                 }
-                
-                m_strPublicProjectorInfo = (strTemp.Length > 0 ? strTemp.Substring(0, (strTemp.Length - 1)) : "");
 
                 //Projector Lifts
                 //TODO: MoveTime was left out of the DB - This may need to be added back - for Now it's hardcoded
-                foreach (var lifts in l_objProjectorLifts) m_objProjectorLifts.Add(new ProjectorLift(lifts.Name, lifts.COMPort, 15000, m_cstrSessionID, m_objLogLevel));
+                foreach (var lifts in l_objProjectorLifts)
+                {
+                    m_objProjectorLifts.Add(new ProjectorLift(lifts.Name, lifts.COMPort, 15000, m_cstrSessionID, m_objLogLevel));
+                    m_lstPublicProjectorLiftInfo.Add(string.Format("{0};{1}", lifts.Name, lifts.ProjectorLiftID));
+                }
 
                 //Matrix Switchers
-                strTemp = "";
                 foreach (var switchers in l_objMatrixSwitchers)
                 {
-                    m_objMatrixSwitchers.Add(new MatrixSwitcher(switchers.Name, switchers.COMPort, m_cstrSessionID, m_objLogLevel));
-                    strTemp += switchers.Name + ";" + switchers.MatrixSwitcherID + "|";
+                    m_objMatrixSwitchers.Add(new MatrixSwitcher(switchers.Name, switchers.COMPort, switchers.IPAddress, m_cstrSessionID, m_objLogLevel));
+                    m_lstPublicSwitcherInfo.Add(string.Format("{0};{1}", switchers.Name, switchers.MatrixSwitcherID));
                 }
-                m_strPublicSwitcherInfo = (strTemp.Length > 0 ? strTemp.Substring(0, (strTemp.Length - 1)) : "");
-
-                //m_objLogger.logToMemory("Loading SonyAPILib Tool");
-                //m_objSonyAPI = new SonyAPI_Lib();
-                ////XDocument dDoc = XDocument.Load("http://192.168.1.6:52323/dmr.xml");
-                ////m_objLogger.logToMemory(dDoc.Root.ToString());
-                //m_objLogger.logToMemory("Done - Loading SonyAPILib");
-
-                //m_objLogger.logToMemory("Load Configurations Completed");
-                //m_objLogger.writePendingToDB(actionStatus.Success);
             }
             catch (System.Exception ex)
             {
+                l_objStatus = actionStatus.Error;
                 string strFullException = ex.ToString();
-                m_objLogger.logToDB(("loadConfigurations() ERROR: " + ex.ToString()), actionStatus.Error, p_blnError_WriteMemoryToDB: true);
+                m_objLogger.logToMemory(string.Format("{0}: Error: {1}", l_strFunctionName, ex.ToString()), l_objStatus);
                 throw new System.Exception("loadConfigurations() ERROR: " + ex.ToString());
             }
-            finally { m_objLogger.writePendingToDB(actionStatus.None, p_strFunctionName: l_strFunctionName); }
+            finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
         }
 
         public string displaySettings()
@@ -964,6 +963,14 @@ namespace khVSAutomation
             return l_objStatus;
         }
 
+        /// <summary>
+        /// Send a Specific Command to the TV.
+        /// Must have the exact command name for this operation to work.
+        /// Use getCommandNames() to return the list of available commands for a specific TV ('|' Delimited)
+        /// </summary>
+        /// <param name="p_strTVName"></param>
+        /// <param name="p_strCommandName"></param>
+        /// <returns></returns>
         public actionStatus SendTVCommand(string p_strTVName, string p_strCommandName)
         {
             actionStatus l_objTVStatus = actionStatus.None;
@@ -974,9 +981,14 @@ namespace khVSAutomation
                 {
                     if (l_objTelevision.TelevisionName == p_strTVName)
                     {
-                        m_objLogger.logToMemory("Sending " + p_strCommandName + " to " + l_objTelevision.TelevisionName, l_objTVStatus);
-                        l_objTelevision.SendCommand(p_strCommandName);
-                        //m_objLogger.logToMemory("Command Sent", l_objTVStatus);
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the TV.", l_strFunctionName , p_strTVName, p_strCommandName), l_objTVStatus);
+                        l_objTVStatus = l_objTelevision.SendCommandByName(p_strCommandName);
+
+                        if (l_objTVStatus == actionStatus.Success)
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strTVName, l_objTVStatus.ToString(), p_strCommandName), l_objTVStatus);
+                        else if (l_objTVStatus == actionStatus.Error)
+                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
+
                         break;
                     }
                 }
@@ -984,47 +996,348 @@ namespace khVSAutomation
             catch (Exception e)
             {
                 l_objTVStatus = actionStatus.Error;
-                m_objLogger.logToMemory("An Error Occured Sending " + p_strTVName + " Command " + p_strCommandName + ": " + e.ToString(), l_objTVStatus);
+                m_objLogger.logToMemory(string.Format("{0}: {1}: An Error Occurred sending {2} to the TV: {3}", l_strFunctionName, p_strTVName, p_strCommandName, e.ToString()), l_objTVStatus);
             }
             finally { m_objLogger.writePendingToDB(l_objTVStatus, p_strFunctionName: l_strFunctionName); }
 
             return l_objTVStatus;
         }
 
-        public actionStatus TestCommands(string p_strCommand, int p_intTVID = 1, StringBuilder p_objProgress = null)
+        public actionStatus SendProjectorCommand(string p_strProjectorName, string p_strCommandName)
+        {
+            actionStatus l_objProjectorStatus = actionStatus.None;
+            var l_strFunctionName = "SendProjectorCommand";
+            try
+            {
+                foreach (var l_objProjector in m_objProjectors)
+                {
+                    if (l_objProjector.projectorName == p_strProjectorName)
+                    {
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Projector.", l_strFunctionName, p_strProjectorName, p_strCommandName), l_objProjectorStatus);
+                        l_objProjectorStatus = l_objProjector.SendCommandByName(p_strCommandName);
+
+                        if (l_objProjectorStatus == actionStatus.Success)
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strProjectorName, l_objProjectorStatus.ToString(), p_strCommandName), l_objProjectorStatus);
+                        else if (l_objProjectorStatus == actionStatus.Error)
+                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
+
+                        break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                l_objProjectorStatus = actionStatus.Error;
+                m_objLogger.logToMemory(string.Format("{0}: {1}: An Error Occurred sending {2} to the Projector: {3}", l_strFunctionName, p_strProjectorName, p_strCommandName, e.ToString()), l_objProjectorStatus);
+            }
+            finally { m_objLogger.writePendingToDB(l_objProjectorStatus, p_strFunctionName: l_strFunctionName); }
+
+            return l_objProjectorStatus;
+        }
+
+        public actionStatus SendLiftCommand(string p_strLiftName, string p_strCommandName)
+        {
+            actionStatus l_objLiftStatus = actionStatus.None;
+            var l_strFunctionName = "SendLiftCommand";
+            try
+            {
+                foreach (var l_objLift in m_objProjectorLifts)
+                {
+                    if (l_objLift.LiftName == p_strLiftName)
+                    {
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Projector Lift.", l_strFunctionName, p_strLiftName, p_strCommandName), l_objLiftStatus);
+                        l_objLiftStatus = l_objLift.SendCommandByName(p_strCommandName);
+
+                        if (l_objLiftStatus == actionStatus.Success)
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strLiftName, l_objLiftStatus.ToString(), p_strCommandName), l_objLiftStatus);
+                        else if (l_objLiftStatus == actionStatus.Error)
+                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
+                        break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                l_objLiftStatus = actionStatus.Error;
+                m_objLogger.logToMemory(string.Format("{0}: {1}: An Error Occurred sending {2} to the Projector Lift: {3}", l_strFunctionName, p_strLiftName, p_strCommandName, e.ToString()), l_objLiftStatus);
+            }
+            finally { m_objLogger.writePendingToDB(l_objLiftStatus, p_strFunctionName: l_strFunctionName); }
+
+            return l_objLiftStatus;
+        }
+
+        public actionStatus SendMatrixCommand(string p_strMatrixName, string p_strCommandName)
+        {
+            actionStatus l_objMatrixStatus = actionStatus.None;
+            var l_strFunctionName = "SendMatrixCommand";
+            try
+            {
+                foreach (var l_objMatrix in m_objMatrixSwitchers)
+                {
+                    if (l_objMatrix.SwitcherName == p_strMatrixName)
+                    {
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Matrix Switcher.", l_strFunctionName, p_strMatrixName, p_strCommandName), l_objMatrixStatus);
+                        l_objMatrixStatus = l_objMatrix.SendCommandByName(p_strCommandName);
+
+                        if (l_objMatrixStatus == actionStatus.Success)
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strMatrixName, l_objMatrixStatus.ToString(), p_strCommandName), l_objMatrixStatus);
+                        else if (l_objMatrixStatus == actionStatus.Error)
+                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
+                        break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                l_objMatrixStatus = actionStatus.Error;
+                m_objLogger.logToMemory(string.Format("{0}: {1}: An Error Occurred sending {2} to the Matrix Switcher: {3}", l_strFunctionName, p_strMatrixName, p_strCommandName, e.ToString()), l_objMatrixStatus);
+            }
+            finally { m_objLogger.writePendingToDB(l_objMatrixStatus, p_strFunctionName: l_strFunctionName); }
+
+            return l_objMatrixStatus;
+        }
+
+
+        /// <summary>
+        /// Obsolete.
+        /// This function was used for the original Console application.
+        /// Use SendCommandByValue(string p_strSelectedTV, string p_strCommand) for any UI versions.
+        /// </summary>
+        /// <param name="p_strCommand"></param>
+        /// <param name="p_intTVID"></param>
+        /// <param name="p_objProgress"></param>
+        /// <returns></returns>
+        public actionStatus SendCommandByValue(string p_strCommand, int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
             var l_objStatus = actionStatus.None;
 
             if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].TestCommands(p_strCommand);
+                l_objStatus = m_objTelevisions[p_intTVID - 1].SendCommandByValue(p_strCommand);
 
             return l_objStatus;
         }
 
-        public actionStatus TestCommands(string p_strSelectedTV, string p_strCommand)
+        /// <summary>
+        /// Intended to allow advanced users to test/send specific commands to the Television
+        /// </summary>
+        /// <param name="p_strSelectedTV"></param>
+        /// <param name="p_strCommand"></param>
+        /// <returns></returns>
+        public actionStatus SendCommandByValue(string p_strSelectedTV, string p_strCommand)
         {
+            var l_strFunctionName = "SendCommandByValue()";
             var l_objStatus = actionStatus.None;
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
             foreach (var l_objTelevision in m_objTelevisions)
             {
                 if (l_objTelevision.TelevisionName == p_strSelectedTV)
                 {
-                    l_objStatus = l_objTelevision.TestCommands(p_strCommand);
-
-                    //Testing
-                    if (l_objStatus != actionStatus.Error)
-                    {
-                        var strTemp = l_objTelevision.get_remote_command_list(true);
-                        if (strTemp.Length > 0)
-                            l_objStatus = actionStatus.Success;
-
-                    }
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Television Located.", l_strFunctionName, p_strSelectedTV));
+                    l_objStatus = l_objTelevision.SendCommandByValue(p_strCommand);
                     break;
                 }
+            }
+
+            switch(l_objStatus)
+            {
+                case actionStatus.Success:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
+                    break;
+                case actionStatus.PartialError:
+                case actionStatus.Error:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
+                    break;
+                case actionStatus.None :
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
+                    break;
             }
 
             return l_objStatus;
         }
 
+        /// <summary>
+        /// Intended to allow advanced users to test/send specific commands to the Projector
+        /// </summary>
+        /// <param name="p_strSelectedTV"></param>
+        /// <param name="p_strCommand"></param>
+        /// <returns></returns>
+        public actionStatus SendProjectorCommandByValue(string p_strSelectedProjector, string p_strCommand)
+        {
+            var l_strFunctionName = "SendProjectorCommandByValue()";
+            var l_objStatus = actionStatus.None;
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
+            foreach (var l_objProjector in m_objProjectors)
+            {
+                if (l_objProjector.projectorName == p_strSelectedProjector)
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Located.", l_strFunctionName, p_strSelectedProjector));
+                    l_objStatus = l_objProjector.SendCommandByValue(p_strCommand);
+                    break;
+                }
+            }
+
+            switch (l_objStatus)
+            {
+                case actionStatus.Success:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
+                    break;
+                case actionStatus.PartialError:
+                case actionStatus.Error:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
+                    break;
+                case actionStatus.None:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
+                    break;
+            }
+
+            return l_objStatus;
+        }
+
+        public actionStatus SendLiftCommandByValue(string p_strSelectedLift, string p_strCommand)
+        {
+            var l_strFunctionName = "SendLiftCommandByValue()";
+            var l_objStatus = actionStatus.None;
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+            foreach (var l_objLift in m_objProjectorLifts)
+            {
+                if (l_objLift.LiftName == p_strSelectedLift)
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Lift Located.", l_strFunctionName, p_strSelectedLift));
+                    l_objStatus = l_objLift.SendCommandByValue(p_strCommand);
+                    break;
+                }
+            }
+
+            switch (l_objStatus)
+            {
+                case actionStatus.Success:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+                    break;
+                case actionStatus.PartialError:
+                case actionStatus.Error:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+                    break;
+                case actionStatus.None:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+                    break;
+            }
+
+            return l_objStatus;
+        }
+
+        public actionStatus SendMatrixCommandByValue(string p_strSelectedLift, string p_strCommand, string p_strDevice, string p_strSource)
+        {
+            var l_strFunctionName = "SendMatrixCommandByValue()";
+            var l_objStatus = actionStatus.None;
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+            foreach (var l_objSwitcher in m_objMatrixSwitchers)
+            {
+                if (l_objSwitcher.SwitcherName == p_strSelectedLift)
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Matrix Switcher Located.", l_strFunctionName, p_strSelectedLift));
+                    l_objStatus = l_objSwitcher.SendCommandByValueHTTP(p_strCommand, p_strDevice, p_strSource);
+                    break;
+                }
+            }
+
+            switch (l_objStatus)
+            {
+                case actionStatus.Success:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+                    break;
+                case actionStatus.PartialError:
+                case actionStatus.Error:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+                    break;
+                case actionStatus.None:
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
+                    break;
+            }
+
+            return l_objStatus;
+        }
+
+        public List<string> ListAvailableCommandsByName(string p_strSelectedTV)
+        {
+            var l_lstrCommandList = new List<string>();
+            var l_strFunctionName = "ListAvailableCommandsByName()";
+            
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Television.", l_strFunctionName, p_strSelectedTV));
+            foreach (var l_objTelevision in m_objTelevisions)
+            {
+                if (l_objTelevision.TelevisionName == p_strSelectedTV)
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Television Located. Retrieving Commands", l_strFunctionName, p_strSelectedTV));
+                    l_lstrCommandList = l_objTelevision.getCommandNames();
+                    break;
+                }
+            }
+            return l_lstrCommandList;
+        }
+
+        public List<string> ListAvailableProjectorCommandsByName(string p_strSelectedProjector)
+        {
+            var l_lstrCommandList = new List<string>();
+            var l_strFunctionName = "ListAvailableProjectorCommandsByName()";
+
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Prjector.", l_strFunctionName, p_strSelectedProjector));
+            foreach (var l_objProjector in m_objProjectors)
+            {
+                if (l_objProjector.projectorName == p_strSelectedProjector)
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Located. Retrieving Commands", l_strFunctionName, p_strSelectedProjector));
+                    l_lstrCommandList = l_objProjector.getCommandNames();
+                    break;
+                }
+            }
+            return l_lstrCommandList;
+        }
+
+        public List<string> ListAvailableProjectorLiftCommandsByName(string p_strSelectedProjectorLift)
+        {
+            var l_lstrCommandList = new List<string>();
+            var l_strFunctionName = "ListAvailableLiftCommandsByName()";
+
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Prjector Lift.", l_strFunctionName, p_strSelectedProjectorLift));
+            foreach (var l_objLift in m_objProjectorLifts)
+            {
+                if (l_objLift.LiftName == p_strSelectedProjectorLift)
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Lift Located. Retrieving Commands.", l_strFunctionName, p_strSelectedProjectorLift));
+                    l_lstrCommandList = l_objLift.getCommandNames();
+                    break;
+                }
+            }
+            return l_lstrCommandList;
+        }
+
+        public List<string> ListAvailableMatrixCommandsByName(string p_strSelectedMatrixSwitcher)
+        {
+            var l_lstrCommandList = new List<string>();
+            var l_strFunctionName = "ListAvailableMatrixCommandsByName()";
+
+            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Matrix Switcher.", l_strFunctionName, p_strSelectedMatrixSwitcher));
+            foreach (var l_objSwitcher in m_objMatrixSwitchers)
+            {
+                if (l_objSwitcher.SwitcherName == p_strSelectedMatrixSwitcher)
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Matrix Switcher Located. Retrieving Commands.", l_strFunctionName, p_strSelectedMatrixSwitcher));
+                    l_lstrCommandList = l_objSwitcher.getCommandNames();
+                    break;
+                }
+            }
+            return l_lstrCommandList;
+        }
+
+        /// <summary>
+        /// Obsolete.
+        /// This function was used for the original Console application.
+        /// use registerTV_Part1(ref bool p_blnPinRequired, string p_strSelectedTV) instead for UI operations.
+        /// </summary>
+        /// <param name="p_blnPinRequired"></param>
+        /// <param name="p_intTVID"></param>
+        /// <param name="p_objProgress"></param>
+        /// <returns></returns>
         public actionStatus registerTV_Part1(ref bool p_blnPinRequired, int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
             var l_objStatus = actionStatus.None;
@@ -1067,7 +1380,9 @@ namespace khVSAutomation
         }
 
         /// <summary>
-        /// Did not work.... Don't use at this time
+        /// Obsolete.
+        /// This function was used for the original Console application.
+        /// This Operation did not work during testing.
         /// </summary>
         /// <param name="p_intTVID"></param>
         /// <param name="p_objProgress"></param>
@@ -1075,19 +1390,30 @@ namespace khVSAutomation
         public actionStatus RegisterTV1Step(int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
             var l_objStatus = actionStatus.None;
+            var l_blnSuccess = false;
 
             if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].RegisterTV1Step();
+                l_objStatus = m_objTelevisions[p_intTVID - 1].RegisterTV1Step(ref l_blnSuccess);
 
             return l_objStatus;
         }
 
+        /// <summary>
+        /// Obsolete.
+        /// This function was used for the original Console application.
+        /// use registerTV_Part2(string l_strPIN, string p_strSelectedTV) for UI operations.
+        /// </summary>
+        /// <param name="l_strPIN"></param>
+        /// <param name="p_intTVID"></param>
+        /// <param name="p_objProgress"></param>
+        /// <returns></returns>
         public actionStatus registerTV_Part2(string l_strPIN, int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
             var l_objStatus = actionStatus.None;
+            var l_blnSuccess = false;
 
             if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].registerTV_Step2(l_strPIN);
+                l_objStatus = m_objTelevisions[p_intTVID - 1].registerTV_Step2(l_strPIN, ref l_blnSuccess);
 
             return l_objStatus;
         }
@@ -1096,6 +1422,7 @@ namespace khVSAutomation
         {
             var l_objStatus = actionStatus.None;
             var l_strFunctonname = "registerTV_Part2";
+            var l_blnSuccess = false;
 
             try
             {
@@ -1105,7 +1432,7 @@ namespace khVSAutomation
                     if (l_objTelevision.TelevisionName == p_strSelectedTV)
                     {
                         l_blnTVFound = true;
-                        l_objStatus = l_objTelevision.registerTV_Step2(l_strPIN);
+                        l_objStatus = l_objTelevision.registerTV_Step2(l_strPIN, ref l_blnSuccess);
                         break;
                     }
                 }

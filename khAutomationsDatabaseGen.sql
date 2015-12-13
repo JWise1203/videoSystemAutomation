@@ -191,6 +191,7 @@ GO
 CREATE TABLE [dbo].[tblMatrixSwitcher](
 	[MatrixSwitcherID] [int] NOT NULL,
 	[Name] [varchar](100) NOT NULL,
+	[IPAddress] [nvarchar] (50) NOT NULL,
 	[COMPort] [nvarchar](50) NOT NULL,
 	[AutoOnOff] [bit] NOT NULL CONSTRAINT [DF_tblMatrixSwitcher_AutoOnOff]  DEFAULT (1),
 	[UpdatedBy] [varchar](36) NULL,
@@ -205,12 +206,12 @@ GO
 SET ANSI_PADDING OFF
 GO
 
-INSERT INTO [dbo].[tblMatrixSwitcher] VALUES(1,'Main Auditorium Matrix Switcher','COM4', 1, 'Russell Ford', getutcdate());
+INSERT INTO [dbo].[tblMatrixSwitcher] VALUES(1,'Main Auditorium Matrix Switcher','192.168.1.88','COM4', 1, 'Russell Ford', getutcdate());
 
 PRINT '
 *** TV Command White List ***'
 
-IF OBJECT_ID('[dbo].[tblMatrixSwitcher]', 'U') IS NOT NULL
+IF OBJECT_ID('[dbo].[tblTVCommandWhiteList]', 'U') IS NOT NULL
 DROP TABLE [dbo].[tblTVCommandWhiteList]
 GO
 
@@ -236,8 +237,8 @@ GO
 SET ANSI_PADDING OFF
 GO
 
---TODO FILL OUT THE REST OF THE COMMANDS we want
-INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(1,'PowerOff','Power Off','Russell Ford', getutcdate());
+--Removed PowerOff: Commands such as Power (on/off) and HDMI will be specially handled in the program.
+--INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(1,'PowerOff','Power Off','Russell Ford', getutcdate());
 INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(3,'Input','Input','Russell Ford', getutcdate());
 INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(4,'Home','Home','Russell Ford', getutcdate());
 INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(5,'Options','Options','Russell Ford', getutcdate());
@@ -266,3 +267,58 @@ INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(27,'ChannelUp','Channel Up','Ru
 INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(28,'ChannelDown','Channel Down','Russell Ford', getutcdate());
 INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(29,'Enter','Enter','Russell Ford', getutcdate());
 INSERT INTO [dbo].[tblTVCommandWhiteList] VALUES(30,'Exit','Exit','Russell Ford', getutcdate());
+
+PRINT '
+*** TV Command White List ***'
+
+IF OBJECT_ID('[dbo].[tblMatrixSwitcherCommands]', 'U') IS NOT NULL
+DROP TABLE [dbo].[tblMatrixSwitcherCommands]
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[tblMatrixSwitcherCommands](
+	[CommandID] [int] NOT NULL,
+	[Name] [varchar](100) NOT NULL,
+	[DisplayValue][varchar](100) NOT NULL,
+	[CommandParameters][varchar](10) NOT NULL,
+	[UpdatedBy] [varchar](36) NULL,
+	[UpdatedDateTime] [datetime] NOT NULL CONSTRAINT [DF_tblMatrixSwitcherCommands_UpdatedDateTime]  DEFAULT (getutcdate()),
+ CONSTRAINT [PK_tblMatrixSwitcherCommandsMatrixSwitcherCommands] PRIMARY KEY CLUSTERED 
+(
+	[CommandID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(1,'Output1Source1','Projector: Display Computer', '3;1;1','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(2,'Output1Source2','Projector: Display Stage HDMI', '3;1;2','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(3,'Output1Source3','Projector: Display Apple TV', '3;1;3','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(4,'Output1Source4','Projector: Display Roku', '3;1;4','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(5,'Output2Source1','Library TV: Display Computer', '3;2;1','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(6,'Output2Source2','Library TV: Display Stage HDMI', '3;2;2','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(7,'Output2Source3','Library TV: Display Apple TV', '3;2;3','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(8,'Output2Source4','Library TV: Display Roku', '3;2;4','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(9,'Output3Source1','Conf. Rm. TV: Display Computer', '3;3;1','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(10,'Output3Source2','Conf. Rm. TV: Display Stage HDMI', '3;3;2','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(11,'Output3Source3','Conf. Rm. TV: Display Apple TV', '3;3;3','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(12,'Output3Source4','Conf. Rm. TV: Display Roku', '3;3;4','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(13,'Output4Source1','Stage TVs: Display Computer', '3;4;1','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(14,'Output4Source2','Stage TVs: Display Stage HDMI', '3;4;2','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(15,'Output4Source3','Stage TVs: Display Apple TV', '3;4;3','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(16,'Output4Source4','Stage TVs: Display Roku', '3;4;4','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(17,'Output1Left','Projector: Source Prev', '4;1;0','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(18,'Output2Left','Library TV: Source Prev', '4;2;0','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(19,'Output3Left','Conf. Rm. TV: Source Prev', '4;3;0','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(20,'Output4Left','Stage TVs: Source Prev', '4;4;0','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(21,'Output1Right','Projector: Source Next', '5;1;0','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(22,'Output2Right','Library TV: Source Next', '5;2;0','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(23,'Output3Right','Conf. Rm. TV: Source Next', '5;3;0','Russell Ford', getutcdate())
+INSERT INTO [dbo].[tblMatrixSwitcherCommands] VALUES(24,'Output4Right','Stage TVs: Source Next', '5;4;0','Russell Ford', getutcdate())

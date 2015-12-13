@@ -4,15 +4,27 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="AutomationsModel1.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+      <Schema Namespace="AutomationsModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="tblMatrixSwitcher">
           <Key>
             <PropertyRef Name="MatrixSwitcherID" />
           </Key>
           <Property Name="MatrixSwitcherID" Type="int" Nullable="false" />
           <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="IPAddress" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="COMPort" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="AutoOnOff" Type="bit" Nullable="false" />
+          <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
+          <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblMatrixSwitcherCommands">
+          <Key>
+            <PropertyRef Name="CommandID" />
+          </Key>
+          <Property Name="CommandID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="DisplayValue" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="CommandParameters" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
           <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
         </EntityType>
@@ -83,8 +95,9 @@
           <Property Name="UpdatedBy" Type="varchar" MaxLength="36" />
           <Property Name="UpdatedDateTime" Type="datetime" Nullable="false" />
         </EntityType>
-        <EntityContainer Name="AutomationsModel1StoreContainer">
+        <EntityContainer Name="AutomationsModelStoreContainer">
           <EntitySet Name="tblMatrixSwitcher" EntityType="Self.tblMatrixSwitcher" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblMatrixSwitcherCommands" EntityType="Self.tblMatrixSwitcherCommands" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblOperationStatus" EntityType="Self.tblOperationStatus" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblProjector" EntityType="Self.tblProjector" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblProjectorLift" EntityType="Self.tblProjectorLift" Schema="dbo" store:Type="Tables" />
@@ -96,15 +109,27 @@
     </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
-      <Schema Namespace="AutomationsModel1" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+      <Schema Namespace="AutomationsModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityType Name="tblMatrixSwitcher">
           <Key>
             <PropertyRef Name="MatrixSwitcherID" />
           </Key>
           <Property Name="MatrixSwitcherID" Type="Int32" Nullable="false" />
           <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="IPAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="COMPort" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="AutoOnOff" Type="Boolean" Nullable="false" />
+          <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
+          <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tblMatrixSwitcherCommand">
+          <Key>
+            <PropertyRef Name="CommandID" />
+          </Key>
+          <Property Name="CommandID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="DisplayValue" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="CommandParameters" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="UpdatedBy" Type="String" MaxLength="36" FixedLength="false" Unicode="false" />
           <Property Name="UpdatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
@@ -177,6 +202,7 @@
         </EntityType>
         <EntityContainer Name="AutomationsEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="tblMatrixSwitchers" EntityType="Self.tblMatrixSwitcher" />
+          <EntitySet Name="tblMatrixSwitcherCommands" EntityType="Self.tblMatrixSwitcherCommand" />
           <EntitySet Name="tblOperationStatus" EntityType="Self.tblOperationStatu" />
           <EntitySet Name="tblProjectors" EntityType="Self.tblProjector" />
           <EntitySet Name="tblProjectorLifts" EntityType="Self.tblProjectorLift" />
@@ -189,12 +215,13 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="AutomationsModel1StoreContainer" CdmEntityContainer="AutomationsEntities">
+        <EntityContainerMapping StorageEntityContainer="AutomationsModelStoreContainer" CdmEntityContainer="AutomationsEntities">
           <EntitySetMapping Name="tblMatrixSwitchers">
-            <EntityTypeMapping TypeName="AutomationsModel1.tblMatrixSwitcher">
+            <EntityTypeMapping TypeName="AutomationsModel.tblMatrixSwitcher">
               <MappingFragment StoreEntitySet="tblMatrixSwitcher">
                 <ScalarProperty Name="MatrixSwitcherID" ColumnName="MatrixSwitcherID" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="IPAddress" ColumnName="IPAddress" />
                 <ScalarProperty Name="COMPort" ColumnName="COMPort" />
                 <ScalarProperty Name="AutoOnOff" ColumnName="AutoOnOff" />
                 <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
@@ -202,8 +229,20 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tblMatrixSwitcherCommands">
+            <EntityTypeMapping TypeName="AutomationsModel.tblMatrixSwitcherCommand">
+              <MappingFragment StoreEntitySet="tblMatrixSwitcherCommands">
+                <ScalarProperty Name="CommandID" ColumnName="CommandID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="DisplayValue" ColumnName="DisplayValue" />
+                <ScalarProperty Name="CommandParameters" ColumnName="CommandParameters" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedDateTime" ColumnName="UpdatedDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tblOperationStatus">
-            <EntityTypeMapping TypeName="AutomationsModel1.tblOperationStatu">
+            <EntityTypeMapping TypeName="AutomationsModel.tblOperationStatu">
               <MappingFragment StoreEntitySet="tblOperationStatus">
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="SessionID" ColumnName="SessionID" />
@@ -215,7 +254,7 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tblProjectors">
-            <EntityTypeMapping TypeName="AutomationsModel1.tblProjector">
+            <EntityTypeMapping TypeName="AutomationsModel.tblProjector">
               <MappingFragment StoreEntitySet="tblProjector">
                 <ScalarProperty Name="ProjectorID" ColumnName="ProjectorID" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
@@ -227,7 +266,7 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tblProjectorLifts">
-            <EntityTypeMapping TypeName="AutomationsModel1.tblProjectorLift">
+            <EntityTypeMapping TypeName="AutomationsModel.tblProjectorLift">
               <MappingFragment StoreEntitySet="tblProjectorLift">
                 <ScalarProperty Name="ProjectorLiftID" ColumnName="ProjectorLiftID" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
@@ -239,7 +278,7 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tblReleateProjectorAndLifts">
-            <EntityTypeMapping TypeName="AutomationsModel1.tblReleateProjectorAndLift">
+            <EntityTypeMapping TypeName="AutomationsModel.tblReleateProjectorAndLift">
               <MappingFragment StoreEntitySet="tblReleateProjectorAndLift">
                 <ScalarProperty Name="ProjectorID" ColumnName="ProjectorID" />
                 <ScalarProperty Name="ProjectorLiftID" ColumnName="ProjectorLiftID" />
@@ -249,7 +288,7 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tblTelevisions">
-            <EntityTypeMapping TypeName="AutomationsModel1.tblTelevision">
+            <EntityTypeMapping TypeName="AutomationsModel.tblTelevision">
               <MappingFragment StoreEntitySet="tblTelevision">
                 <ScalarProperty Name="TelevisionID" ColumnName="TelevisionID" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
@@ -264,7 +303,7 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tblTVCommandWhiteLists">
-            <EntityTypeMapping TypeName="AutomationsModel1.tblTVCommandWhiteList">
+            <EntityTypeMapping TypeName="AutomationsModel.tblTVCommandWhiteList">
               <MappingFragment StoreEntitySet="tblTVCommandWhiteList">
                 <ScalarProperty Name="CommandID" ColumnName="CommandID" />
                 <ScalarProperty Name="Name" ColumnName="Name" />

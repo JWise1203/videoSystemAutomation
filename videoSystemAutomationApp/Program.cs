@@ -219,7 +219,7 @@ namespace videoSystemAutomationApp
                             string strCommand = Console.ReadLine();
                             StringBuilder l_objProgress = new StringBuilder();
 
-                            var l_objStatus = hallAutomations.TestCommands(strCommand, iTVID,l_objProgress);
+                            var l_objStatus = hallAutomations.SendCommandByValue(strCommand, iTVID,l_objProgress);
                             Console.Write(l_objProgress.ToString());
                         }
                         else Console.WriteLine("Registration Cancelled - There are currently no Televisions setup in the configuration file.");

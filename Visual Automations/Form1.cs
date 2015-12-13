@@ -24,12 +24,15 @@ namespace Visual_Automations
     {
         static DateTime StartTime;
 
+        private static int m_intCheckSum;
         private static PJLinkConnection c = null;
         private static Automation hallAutomations = null;
 
         public Form1()
         {
             InitializeComponent();
+
+            m_intCheckSum = 0;
 
             StartTime = DateTime.Now;
 
@@ -39,7 +42,7 @@ namespace Visual_Automations
             //tabControl1.SelectedIndexChanged += new EventHandler(tabControl1_SelectedIndexChanged);
             tabControl1.Selecting += new TabControlCancelEventHandler(tabControl1_Selecting);
 
-            ConfigureQuickTab();
+            ConfigureStartUp();
             //DisplayMainUserInterface();
         }
 
@@ -49,6 +52,9 @@ namespace Visual_Automations
             //validate the current page, to cancel the select use:
             switch (current.Name)
             {
+                case "tbStart":
+                    ConfigureStartUp();
+                    break;
                 case "tbQuick":
                     ConfigureQuickTab();
                     break;
@@ -58,6 +64,12 @@ namespace Visual_Automations
                 case "tbProjectors":
                     ConfigureProjectorsTab();
                     break;
+                case "tbLifts":
+                    ConfigureProjectorLiftTab();
+                    break;
+                case "tbMatrix":
+                    ConfigureMatrixTab();
+                    break;
                 case "tbFeedBack":
                     ConfigureFeedbackTab();
                     break;
@@ -65,6 +77,11 @@ namespace Visual_Automations
                     ConfigureErrorsTab();
                     break;
             }
+        }
+
+        private void ConfigureStartUp()
+        {
+
         }
 
         private void ConfigureErrorsTab()
@@ -77,10 +94,293 @@ namespace Visual_Automations
             //throw new NotImplementedException();
         }
 
+        #region Matrix Switcher Stuff
+        private void ConfigureMatrixTab()
+        {
+            ddlSwitchers.SelectedIndex = -1;
+            ddlSwitchers.Items.Clear();
+            lstSwitcherCommands.SelectedIndex = -1;
+            lstSwitcherCommands.Items.Clear();
+            btnExecuteSwitcherCommand.Enabled = false;
+            gbSwitcherCommands.Visible = false;
+            btnSendRawSwitcherCommand.Enabled = false;
+            txtRawSwitcherCommand.Text = "";
+            txtRawSwitcherCommand.Enabled = false;
+            txtRawSwitcherDevice.Text = "";
+            txtRawSwitcherDevice.Enabled = false;
+            txtRawSwitcherSource.Text = "";
+            txtRawSwitcherSource.Enabled = false;
+
+            ConfigureSwitchers();
+        }
+
+
+        private void ConfigureSwitchers()
+        {
+            if (hallAutomations.NumberOfSwitchers > 0)
+            {
+                foreach (var strSW in hallAutomations.AllSwitchers) ddlSwitchers.Items.Add(strSW.Split(';')[0]);
+                if (ddlSwitchers.Items.Count == 1)
+                    ddlSwitchers.SelectedIndex = 0;
+                ConfigureSwitcherCommands();
+            }
+        }
+
+        private void ConfigureSwitcherCommands(bool p_blnActionListOnly = false)
+        {
+            //Don't care about deselect
+            if (ddlSwitchers.SelectedIndex > -1)
+            {
+                if (!p_blnActionListOnly)
+                {
+                    txtRawSwitcherCommand.Enabled = true;
+                    txtRawSwitcherDevice.Enabled = true;
+                    txtRawSwitcherSource.Enabled = true;
+                    btnSendRawSwitcherCommand.Enabled = true;
+                }
+                gbSwitcherCommands.Visible = true;
+
+                //fill in the List of commands
+                lstSwitcherCommands.SelectedIndex = -1;
+                lstSwitcherCommands.Items.Clear();
+                var l_lstrCommandNames = hallAutomations.ListAvailableMatrixCommandsByName(ddlSwitchers.SelectedItem.ToString());
+                foreach (var l_strCommandDisplayName in l_lstrCommandNames) lstSwitcherCommands.Items.Add(l_strCommandDisplayName);
+            }
+            else
+            {
+                if (!p_blnActionListOnly)
+                {
+                    txtRawSwitcherCommand.Text = "";
+                    txtRawSwitcherCommand.Enabled = false;
+                    txtRawSwitcherDevice.Text = "";
+                    txtRawSwitcherDevice.Enabled = false;
+                    txtRawSwitcherSource.Text = "";
+                    txtRawSwitcherSource.Enabled = false;
+                    btnSendRawSwitcherCommand.Enabled = false;
+                }
+            }
+
+            if (lstSwitcherCommands.SelectedIndex == -1)
+                btnExecuteSwitcherCommand.Enabled = false;
+        }
+
+        private void executeSwitcherCommand()
+        {
+            foreach (Control c in this.Controls) { c.Enabled = false; }
+            var l_objStatus = actionStatus.None;
+            var l_strCommand = lstSwitcherCommands.SelectedItem.ToString();
+            var l_strSwitcherName = ddlSwitchers.SelectedItem.ToString();
+
+            try { l_objStatus = hallAutomations.SendMatrixCommand(l_strSwitcherName, l_strCommand); }
+            catch { l_objStatus = actionStatus.Error; }
+            switch (l_objStatus)
+            {
+                case actionStatus.None:
+                case actionStatus.Success:
+                    MessageBox.Show("Command: " + l_strCommand + " has completed.");
+                    break;
+                default:
+                    MessageBox.Show("Command: " + l_strCommand + " has NOT completed Successfully. Please check the logs for more details OR try again");
+                    break;
+            }
+            foreach (Control c in this.Controls) { c.Enabled = true; }
+        }
+        private void ddlSwitchers_SelectedIndexChanged(object sender, EventArgs e) { ConfigureSwitcherCommands(); }
+
+        private void lstSwitcherCommands_SelectedIndexChanged(object sender, EventArgs e) { btnExecuteSwitcherCommand.Enabled = lstSwitcherCommands.SelectedIndex > -1 ? true : false; }
+
+        private void btnExecuteSwitcherCommand_Click(object sender, EventArgs e) { executeSwitcherCommand(); }
+
+        private void btnSendRawSwitcherCommand_Click(object sender, EventArgs e)
+        {
+            if (txtRawSwitcherCommand.Text.Length > 0 && txtRawSwitcherDevice.Text.Length > 0 && txtRawSwitcherSource.Text.Length > 0) 
+                hallAutomations.SendMatrixCommandByValue(ddlSwitchers.SelectedItem.ToString(), txtRawSwitcherCommand.Text, txtRawSwitcherDevice.Text, txtRawSwitcherSource.Text);
+        }
+        #endregion
+
+        #region Projector Lift Command Stuff
+        private void ConfigureProjectorLiftTab()
+        {
+            ddlLift.SelectedIndex = -1;
+            ddlLift.Items.Clear();
+            lstLiftCommands.SelectedIndex = -1;
+            lstLiftCommands.Items.Clear();
+            btnExecuteLiftCommand.Enabled = false;
+            gbLiftCommands.Visible = false;
+            btnSendRawLiftCommand.Enabled = false;
+            txtRawLiftCommand.Text = "";
+            txtRawLiftCommand.Enabled = false;
+
+            ConfigureLifts();
+        }
+
+        private void ConfigureLifts()
+        {
+            if (hallAutomations.NumberOfProjectorLifts > 0)
+            {
+                foreach (var strLift in hallAutomations.AllProjectorLifts) ddlLift.Items.Add(strLift.Split(';')[0]);
+                if (ddlLift.Items.Count == 1)
+                    ddlLift.SelectedIndex = 0;
+                ConfigureProjectorCommands();
+            }
+        }
+
+        private void ConfigureLiftCommands(bool p_blnActionListOnly = false)
+        {
+            //Don't care about deselect
+            if (ddlLift.SelectedIndex > -1)
+            {
+                if (!p_blnActionListOnly)
+                {
+                    txtRawLiftCommand.Enabled = true;
+                    btnSendRawLiftCommand.Enabled = true;
+                }
+                gbLiftCommands.Visible = true;
+
+                //fill in the List of commands
+                lstLiftCommands.SelectedIndex = -1;
+                lstLiftCommands.Items.Clear();
+                var l_lstrCommandNames = hallAutomations.ListAvailableProjectorLiftCommandsByName(ddlLift.SelectedItem.ToString());
+                foreach (var l_strCommandDisplayName in l_lstrCommandNames) lstLiftCommands.Items.Add(l_strCommandDisplayName);
+            }
+            else
+            {
+                if (!p_blnActionListOnly)
+                {
+                    txtRawLiftCommand.Text = "";
+                    txtRawLiftCommand.Enabled = false;
+                    btnSendRawLiftCommand.Enabled = false;
+                }
+            }
+
+            if (lstLiftCommands.SelectedIndex == -1)
+                btnExecuteLiftCommand.Enabled = false;
+        }
+
+        private void executeLiftCommand()
+        {
+            foreach (Control c in this.Controls) { c.Enabled = false; }
+            var l_objStatus = actionStatus.None;
+            var l_strCommand = lstLiftCommands.SelectedItem.ToString();
+            var l_strLiftName = ddlLift.SelectedItem.ToString();
+
+            try { l_objStatus = hallAutomations.SendLiftCommand(l_strLiftName, l_strCommand); }
+            catch { l_objStatus = actionStatus.Error; }
+            switch (l_objStatus)
+            {
+                case actionStatus.None:
+                case actionStatus.Success:
+                    MessageBox.Show("Command: " + l_strCommand + " has completed.");
+                    break;
+                default:
+                    MessageBox.Show("Command: " + l_strCommand + " has NOT completed Successfully. Please check the logs for more details OR try again");
+                    break;
+            }
+            foreach (Control c in this.Controls) { c.Enabled = true; }
+        }
+
+        private void ddlLift_SelectedIndexChanged(object sender, EventArgs e) { ConfigureLiftCommands(); }
+        private void lstLiftCommands_SelectedIndexChanged(object sender, EventArgs e) { btnExecuteLiftCommand.Enabled = lstLiftCommands.SelectedIndex > -1 ? true : false; }
+        private void btnExecuteLiftCommand_Click(object sender, EventArgs e) { executeLiftCommand(); }
+        private void btnSendRawLiftCommand_Click(object sender, EventArgs e)
+        {
+            if (txtRawLiftCommand.Text.Length > 0) hallAutomations.SendLiftCommandByValue(ddlLift.SelectedItem.ToString(), txtRawLiftCommand.Text);
+        }
+        #endregion
+
+        #region Projector Command Stuff
+
         private void ConfigureProjectorsTab()
         {
-            //throw new NotImplementedException();
+            ddlProjectors.SelectedIndex = -1;
+            ddlProjectors.Items.Clear();
+            lstProjectorCommands.SelectedIndex = -1;
+            lstProjectorCommands.Items.Clear();
+            btnExecuteProjectorCommand.Enabled = false;
+            gbProjectorCommands.Visible = false;
+            btnSendRawProjectorCommand.Enabled = false;
+            txtRawProjectorCommand.Text = "";
+            txtRawProjectorCommand.Enabled = false;
+
+            ConfigureProjectors();
         }
+
+        private void ConfigureProjectors()
+        {
+            if (hallAutomations.NumberOfProjectors > 0)
+            {
+                foreach (var strProj in hallAutomations.AllProjectors) ddlProjectors.Items.Add(strProj.Split(';')[0]);
+                if (ddlProjectors.Items.Count == 1)
+                    ddlProjectors.SelectedIndex = 0;
+                ConfigureProjectorCommands();
+            }
+        }
+
+        private void ConfigureProjectorCommands(bool p_blnActionListOnly = false)
+        {
+            //Don't care about deselect
+            if (ddlProjectors.SelectedIndex > -1)
+            {
+                if (!p_blnActionListOnly)
+                {
+                    txtRawProjectorCommand.Enabled = true;
+                    btnSendRawProjectorCommand.Enabled = true;
+                }
+                gbProjectorCommands.Visible = true;
+
+                //fill in the List of commands
+                lstProjectorCommands.SelectedIndex = -1;
+                lstProjectorCommands.Items.Clear();
+                var l_lstrCommandNames = hallAutomations.ListAvailableProjectorCommandsByName(ddlProjectors.SelectedItem.ToString());
+                foreach (var l_strCommandDisplayName in l_lstrCommandNames) lstProjectorCommands.Items.Add(l_strCommandDisplayName);
+            }
+            else
+            {
+                if (!p_blnActionListOnly)
+                {
+                    txtRawProjectorCommand.Text = "";
+                    txtRawProjectorCommand.Enabled = false;
+                    btnSendRawProjectorCommand.Enabled = false;
+                }
+            }
+
+            if (lstProjectorCommands.SelectedIndex == -1)
+                btnExecuteProjectorCommand.Enabled = false;
+        }
+
+        private void executeProjectorCommand()
+        {
+            foreach (Control c in this.Controls) { c.Enabled = false; }
+            var l_objStatus = actionStatus.None;
+            var l_strCommand = lstProjectorCommands.SelectedItem.ToString();
+            var l_strProjectorName = ddlProjectors.SelectedItem.ToString();
+
+            try { l_objStatus = hallAutomations.SendProjectorCommand(l_strProjectorName, l_strCommand); }
+            catch { l_objStatus = actionStatus.Error; }
+            switch (l_objStatus)
+            {
+                case actionStatus.None:
+                case actionStatus.Success:
+                    MessageBox.Show("Command: " + l_strCommand + " has completed.");
+                    break;
+                default:
+                    MessageBox.Show("Command: " + l_strCommand + " has NOT completed Successfully. Please check the logs for more details OR try again");
+                    break;
+            }
+            foreach (Control c in this.Controls) { c.Enabled = true; }
+        }
+
+        private void ddlProjectors_SelectedIndexChanged(object sender, EventArgs e) { ConfigureProjectorCommands(); }
+
+        private void btnExecuteProjectorCommand_Click(object sender, EventArgs e) { executeProjectorCommand(); }
+
+        private void btnSendRawProjectorCommand_Click(object sender, EventArgs e)
+        {
+            if (txtRawProjectorCommand.Text.Length > 0) hallAutomations.SendProjectorCommandByValue(ddlProjectors.SelectedItem.ToString(), txtRawProjectorCommand.Text);
+        }
+        private void lstProjectorCommands_SelectedIndexChanged(object sender, EventArgs e) { btnExecuteProjectorCommand.Enabled = lstProjectorCommands.SelectedIndex > -1 ? true : false; }
+
+        #endregion
 
         #region Television Commands Stuff
         private void ConfigureTelevisionsTab()
@@ -93,49 +393,65 @@ namespace Visual_Automations
             btnTVRegistration.Enabled = false;
             gbTVRegistration.Visible = false;
             gbTVCommands.Visible = false;
+            btnSendRawCommand.Enabled = false;
+            txtRawCommand.Text = "";
+            txtRawCommand.Enabled = false;
 
             ConfigureTelevisions();
         }
 
         //private static int m_intPreviousSelection
-        private void ddlTelevisions_SelectedIndexChanged(object sender, EventArgs e) { ConfigureTelevisionCommands(); }
         private void ConfigureTelevisions()
         {
             if (hallAutomations.NumberOfTelevisions > 0)
             {
-                foreach (var strTV in hallAutomations.AllTelevisions.Split('|'))
-                {
-                    string[] aryProps = strTV.Split(';');
-                    ddlTelevisions.Items.Add(aryProps[0]);
-                }
+                foreach (var strTV in hallAutomations.AllTelevisions) ddlTelevisions.Items.Add(strTV.Split(';')[0]);
                 ConfigureTelevisionCommands();
             }
         }
-        private void ConfigureTelevisionCommands()
+        private void ConfigureTelevisionCommands(bool p_blnActionListOnly = false)
         {
             //Don't care about deselect
             if (ddlTelevisions.SelectedIndex > -1)
             {
-                //TODO: GET THE LIST OF COMMANDS THAT CAN BE EXECUTED HERE
-                gbTVCommands.Visible = true;
-                gbTVRegistration.Visible = true;
-                btnTVRegistration.Enabled = true;
+                if (!p_blnActionListOnly)
+                {
+                    gbTVRegistration.Visible = true;
+                    btnTVRegistration.Enabled = true;
+                    txtRawCommand.Enabled = true;
+                    btnSendRawCommand.Enabled = true;
+                }
+                gbTVCommands.Visible = true;            
 
                 //fill in the List of commands
                 lstTVCommands.SelectedIndex = -1;
                 lstTVCommands.Items.Clear();
 
-                //Power Commands will always be available since these have specific Functions
-                lstTVCommands.Items.Add("Power On");
-                lstTVCommands.Items.Add("Power Off");
-
-                //Fill in the other commands via the availability list.
+                //These are now filled in the back end - we will take what we get.
+                ////Power Commands will always be available since these have specific Functions
+                //lstTVCommands.Items.Add("Power On");
+                //lstTVCommands.Items.Add("Power Off");
+                var l_lstrCommandNames = hallAutomations.ListAvailableCommandsByName(ddlTelevisions.SelectedItem.ToString());
+                foreach (var l_strCommandDisplayName in l_lstrCommandNames) lstTVCommands.Items.Add(l_strCommandDisplayName);
             }
-            else { btnTVRegistration.Enabled = false; }
+            else 
+            { 
+                if (!p_blnActionListOnly)
+                {
+                    btnTVRegistration.Enabled = false;
+                    txtRawCommand.Text = "";
+                    txtRawCommand.Enabled = false;
+                    btnSendRawCommand.Enabled = false;
+                }
+            }
 
-            btnExecuteCommand.Enabled = false;
-            gbTVAuth.Visible = false;
-            txtPIN.Text = "";
+            if (lstTVCommands.SelectedIndex == -1)
+                btnExecuteCommand.Enabled = false;
+            if (!p_blnActionListOnly)
+            {
+                gbTVAuth.Visible = false;
+                txtPIN.Text = "";
+            }
         }
 
         private void lstTVCommands_SelectedIndexChanged(object sender, EventArgs e) { btnExecuteCommand.Enabled = lstTVCommands.SelectedIndex > -1 ? true : false; }
@@ -159,6 +475,7 @@ namespace Visual_Automations
                     switch (l_objStatus)
                     {
                         case actionStatus.PartialError:
+                            break;
                         case actionStatus.Error:
                             MessageBox.Show("An error occurred while registering the TV. If the TV does not function as expected, please check the logs OR try again.");
                             break;
@@ -166,6 +483,7 @@ namespace Visual_Automations
                             MessageBox.Show("Registration Completed!");
                             break;
                     }
+                    ConfigureTelevisionCommands(true); //Update What's available now.
                     txtPIN.Text = "";
                     gbTVAuth.Visible = false;
                     //Console.Write(l_objProgress.ToString());
@@ -191,10 +509,62 @@ namespace Visual_Automations
                     //btnSendAuth.Enabled = false;
                     gbTVAuth.Visible = true;
                 }
-                else { gbTVAuth.Visible = false; MessageBox.Show("Registration Completed!"); }
+                else { 
+                    gbTVAuth.Visible = false;
+                    ConfigureTelevisionCommands(true); //Update What's available now.
+                    MessageBox.Show("Registration Completed!"); 
+                }
             }
             else { MessageBox.Show("There was an issue sending the registration command for the selected Television"); }
         }
+        private void btnExecuteCommand_Click(object sender, EventArgs e) { executeTVCommand(); }
+        private void executeTVCommand()
+        {
+            foreach (Control c in this.Controls) { c.Enabled = false; }
+            var l_objStatus = actionStatus.None;
+            var l_strCommand = lstTVCommands.SelectedItem.ToString();
+            var l_strTVName = ddlTelevisions.SelectedItem.ToString();
+
+            try
+            {
+                switch (l_strCommand)
+                {
+                    //should not be needed anymore as the Television Class should be able to handle all types of these commands
+                    //case "Power On":
+                    //    l_objStatus = hallAutomations.PowerOnSingleTV(l_strTVName);
+                    //    break;
+                    //case "Power Off":
+                    //    l_objStatus = hallAutomations.PowerOffSingleTV(l_strTVName);
+                    //    break;
+                    default:
+                        l_objStatus = hallAutomations.SendTVCommand(l_strTVName, l_strCommand);
+                        break;
+                }
+            }
+            catch
+            {
+                l_objStatus = actionStatus.Error;
+            }
+            switch (l_objStatus)
+            {
+                case actionStatus.None:
+                case actionStatus.Success:
+                    MessageBox.Show("Command: " + l_strCommand + " has completed.");
+                    break;
+                default:
+                    MessageBox.Show("Command: " + l_strCommand + " has NOT completed Successfully. Please check the logs for more details OR try again");
+                    break;
+            }
+            foreach (Control c in this.Controls) { c.Enabled = true; }
+        }
+
+        private void btnSendRawCommand_Click(object sender, EventArgs e)
+        {
+            if (txtRawCommand.Text.Length > 0) hallAutomations.SendCommandByValue(ddlTelevisions.SelectedItem.ToString(), txtRawCommand.Text);
+        }
+
+        private void ddlTelevisions_SelectedIndexChanged(object sender, EventArgs e) { ConfigureTelevisionCommands(); }
+        
         #endregion
 
         #region Quick Tab Stuff
@@ -214,7 +584,7 @@ namespace Visual_Automations
                 blnTelevisions = true;
                 gbTVs.Visible = true;
 
-                foreach (var strTV in hallAutomations.AllTelevisions.Split('|'))
+                foreach (var strTV in hallAutomations.AllTelevisions)
                 {
                     string[] aryProps = strTV.Split(';');
                     foreach (Control c in gbTVs.Controls)
@@ -240,7 +610,7 @@ namespace Visual_Automations
             {
                 blnProjectors = true;
                 gbProjectors.Visible = true;
-                foreach (var strProj in hallAutomations.AllProjectors.Split('|'))
+                foreach (var strProj in hallAutomations.AllProjectors)
                 {
                     string[] aryProps = strProj.Split(';');
                     foreach (Control c in gbProjectors.Controls)
@@ -265,45 +635,6 @@ namespace Visual_Automations
 
         private void btnOn_Click(object sender, EventArgs e) { turnOnSystem(); }
         private void btnOff_Click(object sender, EventArgs e) { turnOffSystem(); }
-        private void btnExecuteCommand_Click(object sender, EventArgs e) { executeTVCommand(); }
-        private void executeTVCommand()
-        {
-            foreach (Control c in this.Controls) { c.Enabled = false; }
-            var l_objStatus = actionStatus.None;
-            var l_strCommand = lstTVCommands.SelectedItem.ToString();
-            var l_strTVName = ddlTelevisions.SelectedItem.ToString();
-
-            try
-            {
-                switch (l_strCommand)
-                {
-                    case "Power On":
-                        l_objStatus = hallAutomations.PowerOnSingleTV(l_strTVName);
-                        break;
-                    case "Power Off":
-                        l_objStatus = hallAutomations.PowerOffSingleTV(l_strTVName);
-                        break;
-                    default:
-                        l_objStatus = hallAutomations.SendTVCommand(l_strTVName, l_strCommand);
-                        break;
-                }
-            }
-            catch
-            {
-                l_objStatus = actionStatus.Error;
-            }
-            switch (l_objStatus)
-            {
-                case actionStatus.None:
-                case actionStatus.Success:
-                    MessageBox.Show("Command: " + l_strCommand + " has completed.");
-                    break;
-                default:
-                    MessageBox.Show("Command: " + l_strCommand + " has NOT completed Successfully. Please check the logs for more details OR try again");
-                    break;
-            }
-            foreach (Control c in this.Controls) { c.Enabled = true; }
-        }
         private void turnOnSystem()
         {
             foreach (Control c in this.Controls) { c.Enabled = false; }
@@ -349,8 +680,6 @@ namespace Visual_Automations
             }
             foreach (Control c in this.Controls) { c.Enabled = true; }
         }
-
-
         private void turnOffSystem()
         {
             foreach (Control c in this.Controls) { c.Enabled = false; }
@@ -401,126 +730,41 @@ namespace Visual_Automations
         }
         #endregion
 
-        private static void switchMatrixSource(SwitcherOutput p_objOutput, SwitcherAction p_objSource)
-        {
-            StringBuilder l_objProgress = new StringBuilder();
-            MessageBox.Show("Attempting to Switch Source");
-            if (hallAutomations.NumberOfSwitchers > 0)
-            {
-                var l_objStatus = hallAutomations.changeMatrixSource(1, p_objOutput, p_objSource, l_objProgress);
-                Console.Write(l_objProgress.ToString());
-
-                switch (l_objStatus)
-                {
-                    case actionStatus.None:
-                    case actionStatus.Success:
-                        MessageBox.Show("The Source has been successfully Been Switched.");
-                        break;
-                    default:
-                        MessageBox.Show("Something went wrong. Please check the logs for more details.\nIf this issue persists, please contact the system administrator");
-                        break;
-                }
-            }
-            else
-                MessageBox.Show("Action Cannot be Performed: There are No Matrix Switchers Configured!");
-        }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            if (txtRawCommand.Text.Length > 0) hallAutomations.TestCommands(ddlTelevisions.SelectedItem.ToString(), txtRawCommand.Text);
-        }
-        
+        #region Matrix Commander Test Code - Working
         /*
-         private static void OperationLogicProcessor(String operation)
-         {
-             try
-             {
-                 switch (operation)
-                 {
-                     case "C":
-                         Console.Write(hallAutomations.printProjectorStatus());
+        private void btnSendHTTPCommand_Click(object sender, EventArgs e)
+        {
+            if (txtSWCommand.Text.Length > 0 && txtSWOutput.Text.Length > 0 && txtSWSource.Text.Length > 0)
+            {
+                TestMatrixQuick(txtSWCommand.Text, txtSWOutput.Text, txtSWSource.Text);
+            }
+        }
+        static void TestMatrixQuick(string p_strCommand, string p_strOutput, string p_strSource)
+        {
+            m_intCheckSum = Int32.Parse(p_strCommand) + Int32.Parse(p_strOutput) + Int32.Parse(p_strSource);
+            // Create a request for the URL. 
+            var l_strTestResult = "";
+            try
+            {
+                WebRequest request = WebRequest.Create(string.Format(" http://192.168.1.88/switch.cgi?command={0}&data0={1}&data1={2}&checksum={3}", p_strCommand, p_strOutput, p_strSource, m_intCheckSum.ToString()));
+                // If required by the server, set the credentials.
+                request.Credentials = CredentialCache.DefaultCredentials;
+                // Get the response.
+                WebResponse response = request.GetResponse();
+                // Display the status.
+                l_strTestResult = ((HttpWebResponse)response).StatusDescription;
+                response.Close();
+            }
+            catch (Exception e)
+            {
 
-                         RunAnotherOperation();
-                         break;
-                     case "H":
-                         List<string> l_strAvailTVs3 = hallAutomations.getAvailableDeviceInfo(DeviceTypes.Television);
-
-                         if (l_strAvailTVs3.Count > 0)
-                         {
-                             foreach (string l_strTVInfo in l_strAvailTVs3)
-                             {
-                                 string[] l_astrTVInfo = l_strTVInfo.Split('|');
-                                 Console.WriteLine("Enter {0} for {1}", l_astrTVInfo[0], l_astrTVInfo[1]);
-                             }
-                             Console.WriteLine("");
-                             int iTVID = Int32.Parse(Console.ReadLine());
-                             Console.WriteLine("Please Paste Command");
-                             string strCommand = Console.ReadLine();
-                             StringBuilder l_objProgress = new StringBuilder();
-
-                             var l_objStatus = hallAutomations.TestCommands(strCommand, iTVID,l_objProgress);
-                             Console.Write(l_objProgress.ToString());
-                         }
-                         else Console.WriteLine("Registration Cancelled - There are currently no Televisions setup in the configuration file.");
-
-                         RunAnotherOperation();
+            }
+            if (l_strTestResult.Length > 0) { MessageBox.Show("Response received: " + l_strTestResult); }
+            else { MessageBox.Show("No Response received"); }
 
 
-                          for (int i = 1; i <= hallAutomations.NumberOfTelevisions; i++)
-                         {
-                             if (i == 1)
-                             {
-                                 Console.Write("Attempting to power off tv " + i);
-                                 Console.Write(hallAutomations.PowerOffTV(i));
-                             }
-                         }
-                         RunAnotherOperation();
-                         break;
-                     case "X" :
-                         var l_intOutput = -1;
-                         do
-                         {
-                             Console.Write("Please select an Output # (1-4): ");
-                             try { l_intOutput = int.Parse(Console.ReadLine()); }
-                             catch { l_intOutput = -1; }
-                         } while (l_intOutput < 1 || l_intOutput > 4);
-
-                         var l_intSource = -1;
-                         do
-                         {
-                             Console.Write("Please select a Source # (1-4): ");
-                             try { l_intSource = int.Parse(Console.ReadLine()); }
-                             catch { l_intSource = -1; }
-                         } while (l_intSource < 1 || l_intSource > 4);
-
-                         switchMatrixSource((SwitcherOutput)l_intOutput, (SwitcherAction)l_intSource);
-
-                         RunAnotherOperation();
-                         break;
-                     case "Y" :
-                         Console.Write(hallAutomations.displaySettings());
-
-                         RunAnotherOperation();
-                         break;
-                     default:
-                         Console.WriteLine("Error! Unhandled operation selected.");
-
-                         System.Environment.Exit(1);
-
-                         break;
-                 }
-
-                 TimeSpan ts = DateTime.Now - StartTime;
-                 Console.WriteLine("Operation completed in: " + ts.Hours + " Hours " + ts.Minutes + " Minutes " + ts.Seconds + " Seconds");
-             }
-
-             catch (Exception e)
-             {
-                 Console.WriteLine(e.Message);
-             }
-         }    
-             
-              */
-
+        }
+        */
+        #endregion
     }
 }

@@ -29,7 +29,12 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.Label lblRegistrationStatus;
+            System.Windows.Forms.Label lblProjectorStatus;
+            System.Windows.Forms.Label lblLiftStatus;
+            System.Windows.Forms.Label label10;
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tbStart = new System.Windows.Forms.TabPage();
             this.tbQuick = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.gbCommands = new System.Windows.Forms.GroupBox();
@@ -62,21 +67,55 @@
             this.label5 = new System.Windows.Forms.Label();
             this.btnTVRegistration = new System.Windows.Forms.Button();
             this.gbTVCommands = new System.Windows.Forms.GroupBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.btnSendRawCommand = new System.Windows.Forms.Button();
+            this.txtRawCommand = new System.Windows.Forms.TextBox();
             this.btnExecuteCommand = new System.Windows.Forms.Button();
             this.lstTVCommands = new System.Windows.Forms.ListBox();
+            this.tbLifts = new System.Windows.Forms.TabPage();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.ddlLift = new System.Windows.Forms.ComboBox();
+            this.gbLiftCommands = new System.Windows.Forms.GroupBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.btnSendRawLiftCommand = new System.Windows.Forms.Button();
+            this.txtRawLiftCommand = new System.Windows.Forms.TextBox();
+            this.btnExecuteLiftCommand = new System.Windows.Forms.Button();
+            this.lstLiftCommands = new System.Windows.Forms.ListBox();
             this.tbProjectors = new System.Windows.Forms.TabPage();
             this.label4 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.ddlProjectors = new System.Windows.Forms.ComboBox();
+            this.gbProjectorCommands = new System.Windows.Forms.GroupBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.btnSendRawProjectorCommand = new System.Windows.Forms.Button();
+            this.txtRawProjectorCommand = new System.Windows.Forms.TextBox();
+            this.btnExecuteProjectorCommand = new System.Windows.Forms.Button();
+            this.lstProjectorCommands = new System.Windows.Forms.ListBox();
+            this.tbMatrix = new System.Windows.Forms.TabPage();
+            this.label14 = new System.Windows.Forms.Label();
+            this.ddlSwitchers = new System.Windows.Forms.ComboBox();
+            this.gbSwitcherCommands = new System.Windows.Forms.GroupBox();
+            this.label20 = new System.Windows.Forms.Label();
+            this.txtRawSwitcherSource = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.txtRawSwitcherDevice = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.btnSendRawSwitcherCommand = new System.Windows.Forms.Button();
+            this.txtRawSwitcherCommand = new System.Windows.Forms.TextBox();
+            this.btnExecuteSwitcherCommand = new System.Windows.Forms.Button();
+            this.lstSwitcherCommands = new System.Windows.Forms.ListBox();
             this.tbErrors = new System.Windows.Forms.TabPage();
             this.label3 = new System.Windows.Forms.Label();
             this.button3 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.Feedback = new System.Windows.Forms.TabPage();
+            this.tbFeedback = new System.Windows.Forms.TabPage();
             this.label2 = new System.Windows.Forms.Label();
-            this.txtRawCommand = new System.Windows.Forms.TextBox();
-            this.button4 = new System.Windows.Forms.Button();
-            this.label7 = new System.Windows.Forms.Label();
             lblRegistrationStatus = new System.Windows.Forms.Label();
+            lblProjectorStatus = new System.Windows.Forms.Label();
+            lblLiftStatus = new System.Windows.Forms.Label();
+            label10 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tbQuick.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -87,30 +126,68 @@
             this.gbTVRegistration.SuspendLayout();
             this.gbTVAuth.SuspendLayout();
             this.gbTVCommands.SuspendLayout();
+            this.tbLifts.SuspendLayout();
+            this.gbLiftCommands.SuspendLayout();
             this.tbProjectors.SuspendLayout();
+            this.gbProjectorCommands.SuspendLayout();
+            this.tbMatrix.SuspendLayout();
+            this.gbSwitcherCommands.SuspendLayout();
             this.tbErrors.SuspendLayout();
-            this.Feedback.SuspendLayout();
+            this.tbFeedback.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblRegistrationStatus
             // 
             lblRegistrationStatus.Location = new System.Drawing.Point(6, 99);
             lblRegistrationStatus.Name = "lblRegistrationStatus";
-            lblRegistrationStatus.Size = new System.Drawing.Size(265, 70);
+            lblRegistrationStatus.Size = new System.Drawing.Size(265, 211);
             lblRegistrationStatus.TabIndex = 9;
+            // 
+            // lblProjectorStatus
+            // 
+            lblProjectorStatus.Location = new System.Drawing.Point(6, 198);
+            lblProjectorStatus.Name = "lblProjectorStatus";
+            lblProjectorStatus.Size = new System.Drawing.Size(265, 211);
+            lblProjectorStatus.TabIndex = 14;
+            // 
+            // lblLiftStatus
+            // 
+            lblLiftStatus.Location = new System.Drawing.Point(6, 170);
+            lblLiftStatus.Name = "lblLiftStatus";
+            lblLiftStatus.Size = new System.Drawing.Size(265, 211);
+            lblLiftStatus.TabIndex = 19;
+            // 
+            // label10
+            // 
+            label10.Location = new System.Drawing.Point(9, 174);
+            label10.Name = "label10";
+            label10.Size = new System.Drawing.Size(204, 283);
+            label10.TabIndex = 23;
             // 
             // tabControl1
             // 
+            this.tabControl1.Controls.Add(this.tbStart);
             this.tabControl1.Controls.Add(this.tbQuick);
             this.tabControl1.Controls.Add(this.tbTelevisions);
+            this.tabControl1.Controls.Add(this.tbLifts);
             this.tabControl1.Controls.Add(this.tbProjectors);
+            this.tabControl1.Controls.Add(this.tbMatrix);
             this.tabControl1.Controls.Add(this.tbErrors);
-            this.tabControl1.Controls.Add(this.Feedback);
+            this.tabControl1.Controls.Add(this.tbFeedback);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(694, 504);
             this.tabControl1.TabIndex = 0;
+            // 
+            // tbStart
+            // 
+            this.tbStart.Location = new System.Drawing.Point(4, 22);
+            this.tbStart.Name = "tbStart";
+            this.tbStart.Size = new System.Drawing.Size(686, 478);
+            this.tbStart.TabIndex = 7;
+            this.tbStart.Text = "Start";
+            this.tbStart.UseVisualStyleBackColor = true;
             // 
             // tbQuick
             // 
@@ -122,7 +199,7 @@
             this.tbQuick.Padding = new System.Windows.Forms.Padding(3);
             this.tbQuick.Size = new System.Drawing.Size(686, 478);
             this.tbQuick.TabIndex = 0;
-            this.tbQuick.Text = "Quick Commands";
+            this.tbQuick.Text = "Power";
             this.tbQuick.UseVisualStyleBackColor = true;
             // 
             // groupBox1
@@ -382,7 +459,7 @@
             this.tbTelevisions.Padding = new System.Windows.Forms.Padding(3);
             this.tbTelevisions.Size = new System.Drawing.Size(686, 478);
             this.tbTelevisions.TabIndex = 2;
-            this.tbTelevisions.Text = "Television Commands";
+            this.tbTelevisions.Text = "Televisions";
             this.tbTelevisions.UseVisualStyleBackColor = true;
             // 
             // label6
@@ -480,7 +557,7 @@
             // gbTVCommands
             // 
             this.gbTVCommands.Controls.Add(this.label7);
-            this.gbTVCommands.Controls.Add(this.button4);
+            this.gbTVCommands.Controls.Add(this.btnSendRawCommand);
             this.gbTVCommands.Controls.Add(this.txtRawCommand);
             this.gbTVCommands.Controls.Add(this.btnExecuteCommand);
             this.gbTVCommands.Controls.Add(this.lstTVCommands);
@@ -493,10 +570,36 @@
             this.gbTVCommands.Text = "General Commands";
             this.gbTVCommands.Visible = false;
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(6, 227);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(118, 20);
+            this.label7.TabIndex = 7;
+            this.label7.Text = "Raw Command";
+            // 
+            // btnSendRawCommand
+            // 
+            this.btnSendRawCommand.Location = new System.Drawing.Point(210, 244);
+            this.btnSendRawCommand.Name = "btnSendRawCommand";
+            this.btnSendRawCommand.Size = new System.Drawing.Size(123, 38);
+            this.btnSendRawCommand.TabIndex = 6;
+            this.btnSendRawCommand.Text = "Send Test";
+            this.btnSendRawCommand.UseVisualStyleBackColor = true;
+            this.btnSendRawCommand.Click += new System.EventHandler(this.btnSendRawCommand_Click);
+            // 
+            // txtRawCommand
+            // 
+            this.txtRawCommand.Location = new System.Drawing.Point(6, 250);
+            this.txtRawCommand.Name = "txtRawCommand";
+            this.txtRawCommand.Size = new System.Drawing.Size(198, 26);
+            this.txtRawCommand.TabIndex = 5;
+            // 
             // btnExecuteCommand
             // 
             this.btnExecuteCommand.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExecuteCommand.Location = new System.Drawing.Point(210, 122);
+            this.btnExecuteCommand.Location = new System.Drawing.Point(210, 83);
             this.btnExecuteCommand.Name = "btnExecuteCommand";
             this.btnExecuteCommand.Size = new System.Drawing.Size(159, 72);
             this.btnExecuteCommand.TabIndex = 4;
@@ -515,27 +618,356 @@
             this.lstTVCommands.TabIndex = 2;
             this.lstTVCommands.SelectedIndexChanged += new System.EventHandler(this.lstTVCommands_SelectedIndexChanged);
             // 
+            // tbLifts
+            // 
+            this.tbLifts.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.tbLifts.Controls.Add(this.label9);
+            this.tbLifts.Controls.Add(lblLiftStatus);
+            this.tbLifts.Controls.Add(this.label12);
+            this.tbLifts.Controls.Add(this.ddlLift);
+            this.tbLifts.Controls.Add(this.gbLiftCommands);
+            this.tbLifts.Location = new System.Drawing.Point(4, 22);
+            this.tbLifts.Name = "tbLifts";
+            this.tbLifts.Padding = new System.Windows.Forms.Padding(3);
+            this.tbLifts.Size = new System.Drawing.Size(686, 478);
+            this.tbLifts.TabIndex = 5;
+            this.tbLifts.Text = "Projector Lifts";
+            this.tbLifts.UseVisualStyleBackColor = true;
+            // 
+            // label9
+            // 
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(6, 48);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(670, 22);
+            this.label9.TabIndex = 20;
+            this.label9.Text = "Please do not close the lift while the projector is still on.";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label12.Location = new System.Drawing.Point(5, 111);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(160, 20);
+            this.label12.TabIndex = 18;
+            this.label12.Text = "Select a Projector Lift";
+            // 
+            // ddlLift
+            // 
+            this.ddlLift.FormattingEnabled = true;
+            this.ddlLift.Location = new System.Drawing.Point(6, 134);
+            this.ddlLift.Name = "ddlLift";
+            this.ddlLift.Size = new System.Drawing.Size(265, 21);
+            this.ddlLift.TabIndex = 17;
+            this.ddlLift.SelectedIndexChanged += new System.EventHandler(this.ddlLift_SelectedIndexChanged);
+            // 
+            // gbLiftCommands
+            // 
+            this.gbLiftCommands.Controls.Add(this.label13);
+            this.gbLiftCommands.Controls.Add(this.btnSendRawLiftCommand);
+            this.gbLiftCommands.Controls.Add(this.txtRawLiftCommand);
+            this.gbLiftCommands.Controls.Add(this.btnExecuteLiftCommand);
+            this.gbLiftCommands.Controls.Add(this.lstLiftCommands);
+            this.gbLiftCommands.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gbLiftCommands.Location = new System.Drawing.Point(283, 87);
+            this.gbLiftCommands.Name = "gbLiftCommands";
+            this.gbLiftCommands.Size = new System.Drawing.Size(393, 297);
+            this.gbLiftCommands.TabIndex = 16;
+            this.gbLiftCommands.TabStop = false;
+            this.gbLiftCommands.Text = "General Commands";
+            this.gbLiftCommands.Visible = false;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(6, 227);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(118, 20);
+            this.label13.TabIndex = 7;
+            this.label13.Text = "Raw Command";
+            // 
+            // btnSendRawLiftCommand
+            // 
+            this.btnSendRawLiftCommand.Location = new System.Drawing.Point(210, 244);
+            this.btnSendRawLiftCommand.Name = "btnSendRawLiftCommand";
+            this.btnSendRawLiftCommand.Size = new System.Drawing.Size(123, 38);
+            this.btnSendRawLiftCommand.TabIndex = 6;
+            this.btnSendRawLiftCommand.Text = "Send Test";
+            this.btnSendRawLiftCommand.UseVisualStyleBackColor = true;
+            this.btnSendRawLiftCommand.Click += new System.EventHandler(this.btnSendRawLiftCommand_Click);
+            // 
+            // txtRawLiftCommand
+            // 
+            this.txtRawLiftCommand.Location = new System.Drawing.Point(6, 250);
+            this.txtRawLiftCommand.Name = "txtRawLiftCommand";
+            this.txtRawLiftCommand.Size = new System.Drawing.Size(198, 26);
+            this.txtRawLiftCommand.TabIndex = 5;
+            // 
+            // btnExecuteLiftCommand
+            // 
+            this.btnExecuteLiftCommand.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExecuteLiftCommand.Location = new System.Drawing.Point(210, 122);
+            this.btnExecuteLiftCommand.Name = "btnExecuteLiftCommand";
+            this.btnExecuteLiftCommand.Size = new System.Drawing.Size(159, 72);
+            this.btnExecuteLiftCommand.TabIndex = 4;
+            this.btnExecuteLiftCommand.Text = "Execute Command";
+            this.btnExecuteLiftCommand.UseVisualStyleBackColor = true;
+            this.btnExecuteLiftCommand.Click += new System.EventHandler(this.btnExecuteLiftCommand_Click);
+            // 
+            // lstLiftCommands
+            // 
+            this.lstLiftCommands.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstLiftCommands.FormattingEnabled = true;
+            this.lstLiftCommands.ItemHeight = 20;
+            this.lstLiftCommands.Location = new System.Drawing.Point(6, 47);
+            this.lstLiftCommands.Name = "lstLiftCommands";
+            this.lstLiftCommands.Size = new System.Drawing.Size(198, 164);
+            this.lstLiftCommands.TabIndex = 2;
+            this.lstLiftCommands.SelectedIndexChanged += new System.EventHandler(this.lstLiftCommands_SelectedIndexChanged);
+            // 
             // tbProjectors
             // 
             this.tbProjectors.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tbProjectors.Controls.Add(this.label4);
+            this.tbProjectors.Controls.Add(lblProjectorStatus);
+            this.tbProjectors.Controls.Add(this.label8);
+            this.tbProjectors.Controls.Add(this.ddlProjectors);
+            this.tbProjectors.Controls.Add(this.gbProjectorCommands);
             this.tbProjectors.Location = new System.Drawing.Point(4, 22);
             this.tbProjectors.Name = "tbProjectors";
             this.tbProjectors.Padding = new System.Windows.Forms.Padding(3);
             this.tbProjectors.Size = new System.Drawing.Size(686, 478);
             this.tbProjectors.TabIndex = 3;
-            this.tbProjectors.Text = "Projector Commands";
+            this.tbProjectors.Text = "Projectors";
             this.tbProjectors.UseVisualStyleBackColor = true;
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(82, 201);
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(6, 31);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(519, 73);
-            this.label4.TabIndex = 1;
-            this.label4.Text = "COMING SOON!";
+            this.label4.Size = new System.Drawing.Size(670, 67);
+            this.label4.TabIndex = 15;
+            this.label4.Text = resources.GetString("label4.Text");
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(5, 139);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(134, 20);
+            this.label8.TabIndex = 13;
+            this.label8.Text = "Select a Projector";
+            // 
+            // ddlProjectors
+            // 
+            this.ddlProjectors.FormattingEnabled = true;
+            this.ddlProjectors.Location = new System.Drawing.Point(6, 162);
+            this.ddlProjectors.Name = "ddlProjectors";
+            this.ddlProjectors.Size = new System.Drawing.Size(265, 21);
+            this.ddlProjectors.TabIndex = 12;
+            this.ddlProjectors.SelectedIndexChanged += new System.EventHandler(this.ddlProjectors_SelectedIndexChanged);
+            // 
+            // gbProjectorCommands
+            // 
+            this.gbProjectorCommands.Controls.Add(this.label11);
+            this.gbProjectorCommands.Controls.Add(this.btnSendRawProjectorCommand);
+            this.gbProjectorCommands.Controls.Add(this.txtRawProjectorCommand);
+            this.gbProjectorCommands.Controls.Add(this.btnExecuteProjectorCommand);
+            this.gbProjectorCommands.Controls.Add(this.lstProjectorCommands);
+            this.gbProjectorCommands.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gbProjectorCommands.Location = new System.Drawing.Point(283, 115);
+            this.gbProjectorCommands.Name = "gbProjectorCommands";
+            this.gbProjectorCommands.Size = new System.Drawing.Size(393, 297);
+            this.gbProjectorCommands.TabIndex = 10;
+            this.gbProjectorCommands.TabStop = false;
+            this.gbProjectorCommands.Text = "General Commands";
+            this.gbProjectorCommands.Visible = false;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 227);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(118, 20);
+            this.label11.TabIndex = 7;
+            this.label11.Text = "Raw Command";
+            // 
+            // btnSendRawProjectorCommand
+            // 
+            this.btnSendRawProjectorCommand.Location = new System.Drawing.Point(210, 244);
+            this.btnSendRawProjectorCommand.Name = "btnSendRawProjectorCommand";
+            this.btnSendRawProjectorCommand.Size = new System.Drawing.Size(123, 38);
+            this.btnSendRawProjectorCommand.TabIndex = 6;
+            this.btnSendRawProjectorCommand.Text = "Send Test";
+            this.btnSendRawProjectorCommand.UseVisualStyleBackColor = true;
+            this.btnSendRawProjectorCommand.Click += new System.EventHandler(this.btnSendRawProjectorCommand_Click);
+            // 
+            // txtRawProjectorCommand
+            // 
+            this.txtRawProjectorCommand.Location = new System.Drawing.Point(6, 250);
+            this.txtRawProjectorCommand.Name = "txtRawProjectorCommand";
+            this.txtRawProjectorCommand.Size = new System.Drawing.Size(198, 26);
+            this.txtRawProjectorCommand.TabIndex = 5;
+            // 
+            // btnExecuteProjectorCommand
+            // 
+            this.btnExecuteProjectorCommand.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExecuteProjectorCommand.Location = new System.Drawing.Point(210, 122);
+            this.btnExecuteProjectorCommand.Name = "btnExecuteProjectorCommand";
+            this.btnExecuteProjectorCommand.Size = new System.Drawing.Size(159, 72);
+            this.btnExecuteProjectorCommand.TabIndex = 4;
+            this.btnExecuteProjectorCommand.Text = "Execute Command";
+            this.btnExecuteProjectorCommand.UseVisualStyleBackColor = true;
+            this.btnExecuteProjectorCommand.Click += new System.EventHandler(this.btnExecuteProjectorCommand_Click);
+            // 
+            // lstProjectorCommands
+            // 
+            this.lstProjectorCommands.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstProjectorCommands.FormattingEnabled = true;
+            this.lstProjectorCommands.ItemHeight = 20;
+            this.lstProjectorCommands.Location = new System.Drawing.Point(6, 47);
+            this.lstProjectorCommands.Name = "lstProjectorCommands";
+            this.lstProjectorCommands.Size = new System.Drawing.Size(198, 164);
+            this.lstProjectorCommands.TabIndex = 2;
+            this.lstProjectorCommands.SelectedIndexChanged += new System.EventHandler(this.lstProjectorCommands_SelectedIndexChanged);
+            // 
+            // tbMatrix
+            // 
+            this.tbMatrix.Controls.Add(label10);
+            this.tbMatrix.Controls.Add(this.label14);
+            this.tbMatrix.Controls.Add(this.ddlSwitchers);
+            this.tbMatrix.Controls.Add(this.gbSwitcherCommands);
+            this.tbMatrix.Location = new System.Drawing.Point(4, 22);
+            this.tbMatrix.Name = "tbMatrix";
+            this.tbMatrix.Size = new System.Drawing.Size(686, 478);
+            this.tbMatrix.TabIndex = 6;
+            this.tbMatrix.Text = "Matrix Switchers";
+            this.tbMatrix.UseVisualStyleBackColor = true;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label14.Location = new System.Drawing.Point(8, 115);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(178, 20);
+            this.label14.TabIndex = 22;
+            this.label14.Text = "Select a Matrix Switcher";
+            // 
+            // ddlSwitchers
+            // 
+            this.ddlSwitchers.FormattingEnabled = true;
+            this.ddlSwitchers.Location = new System.Drawing.Point(9, 138);
+            this.ddlSwitchers.Name = "ddlSwitchers";
+            this.ddlSwitchers.Size = new System.Drawing.Size(204, 21);
+            this.ddlSwitchers.TabIndex = 21;
+            this.ddlSwitchers.SelectedIndexChanged += new System.EventHandler(this.ddlSwitchers_SelectedIndexChanged);
+            // 
+            // gbSwitcherCommands
+            // 
+            this.gbSwitcherCommands.Controls.Add(this.label20);
+            this.gbSwitcherCommands.Controls.Add(this.txtRawSwitcherSource);
+            this.gbSwitcherCommands.Controls.Add(this.label19);
+            this.gbSwitcherCommands.Controls.Add(this.txtRawSwitcherDevice);
+            this.gbSwitcherCommands.Controls.Add(this.label15);
+            this.gbSwitcherCommands.Controls.Add(this.btnSendRawSwitcherCommand);
+            this.gbSwitcherCommands.Controls.Add(this.txtRawSwitcherCommand);
+            this.gbSwitcherCommands.Controls.Add(this.btnExecuteSwitcherCommand);
+            this.gbSwitcherCommands.Controls.Add(this.lstSwitcherCommands);
+            this.gbSwitcherCommands.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gbSwitcherCommands.Location = new System.Drawing.Point(219, 19);
+            this.gbSwitcherCommands.Name = "gbSwitcherCommands";
+            this.gbSwitcherCommands.Size = new System.Drawing.Size(460, 438);
+            this.gbSwitcherCommands.TabIndex = 20;
+            this.gbSwitcherCommands.TabStop = false;
+            this.gbSwitcherCommands.Text = "General Commands";
+            this.gbSwitcherCommands.Visible = false;
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(206, 363);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(73, 20);
+            this.label20.TabIndex = 11;
+            this.label20.Text = "Source #";
+            // 
+            // txtRawSwitcherSource
+            // 
+            this.txtRawSwitcherSource.Location = new System.Drawing.Point(206, 386);
+            this.txtRawSwitcherSource.MaxLength = 1;
+            this.txtRawSwitcherSource.Name = "txtRawSwitcherSource";
+            this.txtRawSwitcherSource.Size = new System.Drawing.Size(82, 26);
+            this.txtRawSwitcherSource.TabIndex = 10;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(107, 363);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(70, 20);
+            this.label19.TabIndex = 9;
+            this.label19.Text = "Device #";
+            // 
+            // txtRawSwitcherDevice
+            // 
+            this.txtRawSwitcherDevice.Location = new System.Drawing.Point(107, 386);
+            this.txtRawSwitcherDevice.MaxLength = 1;
+            this.txtRawSwitcherDevice.Name = "txtRawSwitcherDevice";
+            this.txtRawSwitcherDevice.Size = new System.Drawing.Size(82, 26);
+            this.txtRawSwitcherDevice.TabIndex = 8;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(6, 363);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(95, 20);
+            this.label15.TabIndex = 7;
+            this.label15.Text = "Command #";
+            // 
+            // btnSendRawSwitcherCommand
+            // 
+            this.btnSendRawSwitcherCommand.Location = new System.Drawing.Point(295, 380);
+            this.btnSendRawSwitcherCommand.Name = "btnSendRawSwitcherCommand";
+            this.btnSendRawSwitcherCommand.Size = new System.Drawing.Size(123, 38);
+            this.btnSendRawSwitcherCommand.TabIndex = 6;
+            this.btnSendRawSwitcherCommand.Text = "Send Test";
+            this.btnSendRawSwitcherCommand.UseVisualStyleBackColor = true;
+            this.btnSendRawSwitcherCommand.Click += new System.EventHandler(this.btnSendRawSwitcherCommand_Click);
+            // 
+            // txtRawSwitcherCommand
+            // 
+            this.txtRawSwitcherCommand.Location = new System.Drawing.Point(6, 386);
+            this.txtRawSwitcherCommand.MaxLength = 1;
+            this.txtRawSwitcherCommand.Name = "txtRawSwitcherCommand";
+            this.txtRawSwitcherCommand.Size = new System.Drawing.Size(82, 26);
+            this.txtRawSwitcherCommand.TabIndex = 5;
+            // 
+            // btnExecuteSwitcherCommand
+            // 
+            this.btnExecuteSwitcherCommand.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExecuteSwitcherCommand.Location = new System.Drawing.Point(295, 168);
+            this.btnExecuteSwitcherCommand.Name = "btnExecuteSwitcherCommand";
+            this.btnExecuteSwitcherCommand.Size = new System.Drawing.Size(159, 72);
+            this.btnExecuteSwitcherCommand.TabIndex = 4;
+            this.btnExecuteSwitcherCommand.Text = "Execute Command";
+            this.btnExecuteSwitcherCommand.UseVisualStyleBackColor = true;
+            this.btnExecuteSwitcherCommand.Click += new System.EventHandler(this.btnExecuteSwitcherCommand_Click);
+            // 
+            // lstSwitcherCommands
+            // 
+            this.lstSwitcherCommands.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstSwitcherCommands.FormattingEnabled = true;
+            this.lstSwitcherCommands.ItemHeight = 20;
+            this.lstSwitcherCommands.Location = new System.Drawing.Point(6, 47);
+            this.lstSwitcherCommands.Name = "lstSwitcherCommands";
+            this.lstSwitcherCommands.Size = new System.Drawing.Size(283, 304);
+            this.lstSwitcherCommands.TabIndex = 2;
+            this.lstSwitcherCommands.SelectedIndexChanged += new System.EventHandler(this.lstSwitcherCommands_SelectedIndexChanged);
             // 
             // tbErrors
             // 
@@ -589,52 +1021,27 @@
             this.button1.Text = "Refresh List";
             this.button1.UseVisualStyleBackColor = true;
             // 
-            // Feedback
+            // tbFeedback
             // 
-            this.Feedback.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.Feedback.Controls.Add(this.label2);
-            this.Feedback.Location = new System.Drawing.Point(4, 22);
-            this.Feedback.Name = "Feedback";
-            this.Feedback.Size = new System.Drawing.Size(686, 478);
-            this.Feedback.TabIndex = 4;
-            this.Feedback.Text = "Feedback";
-            this.Feedback.UseVisualStyleBackColor = true;
+            this.tbFeedback.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.tbFeedback.Controls.Add(this.label2);
+            this.tbFeedback.Location = new System.Drawing.Point(4, 22);
+            this.tbFeedback.Name = "tbFeedback";
+            this.tbFeedback.Padding = new System.Windows.Forms.Padding(3);
+            this.tbFeedback.Size = new System.Drawing.Size(686, 478);
+            this.tbFeedback.TabIndex = 4;
+            this.tbFeedback.Text = "Feedback";
+            this.tbFeedback.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(83, 171);
+            this.label2.Location = new System.Drawing.Point(86, 174);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(519, 73);
             this.label2.TabIndex = 0;
             this.label2.Text = "COMING SOON!";
-            // 
-            // txtRawCommand
-            // 
-            this.txtRawCommand.Location = new System.Drawing.Point(6, 250);
-            this.txtRawCommand.Name = "txtRawCommand";
-            this.txtRawCommand.Size = new System.Drawing.Size(198, 26);
-            this.txtRawCommand.TabIndex = 5;
-            // 
-            // button4
-            // 
-            this.button4.Location = new System.Drawing.Point(210, 244);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(123, 38);
-            this.button4.TabIndex = 6;
-            this.button4.Text = "Send Test";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 227);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(118, 20);
-            this.label7.TabIndex = 7;
-            this.label7.Text = "Raw Command";
             // 
             // Form1
             // 
@@ -661,12 +1068,22 @@
             this.gbTVAuth.PerformLayout();
             this.gbTVCommands.ResumeLayout(false);
             this.gbTVCommands.PerformLayout();
+            this.tbLifts.ResumeLayout(false);
+            this.tbLifts.PerformLayout();
+            this.gbLiftCommands.ResumeLayout(false);
+            this.gbLiftCommands.PerformLayout();
             this.tbProjectors.ResumeLayout(false);
             this.tbProjectors.PerformLayout();
+            this.gbProjectorCommands.ResumeLayout(false);
+            this.gbProjectorCommands.PerformLayout();
+            this.tbMatrix.ResumeLayout(false);
+            this.tbMatrix.PerformLayout();
+            this.gbSwitcherCommands.ResumeLayout(false);
+            this.gbSwitcherCommands.PerformLayout();
             this.tbErrors.ResumeLayout(false);
             this.tbErrors.PerformLayout();
-            this.Feedback.ResumeLayout(false);
-            this.Feedback.PerformLayout();
+            this.tbFeedback.ResumeLayout(false);
+            this.tbFeedback.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -700,9 +1117,8 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TabPage tbTelevisions;
         private System.Windows.Forms.TabPage tbProjectors;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TabPage Feedback;
+        private System.Windows.Forms.TabPage tbFeedback;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox cboProj4;
         private System.Windows.Forms.ComboBox ddlTelevisions;
@@ -717,9 +1133,42 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.GroupBox gbTVAuth;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button btnSendRawCommand;
         private System.Windows.Forms.TextBox txtRawCommand;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox ddlProjectors;
+        private System.Windows.Forms.GroupBox gbProjectorCommands;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button btnSendRawProjectorCommand;
+        private System.Windows.Forms.TextBox txtRawProjectorCommand;
+        private System.Windows.Forms.Button btnExecuteProjectorCommand;
+        private System.Windows.Forms.ListBox lstProjectorCommands;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TabPage tbLifts;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.ComboBox ddlLift;
+        private System.Windows.Forms.GroupBox gbLiftCommands;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Button btnSendRawLiftCommand;
+        private System.Windows.Forms.TextBox txtRawLiftCommand;
+        private System.Windows.Forms.Button btnExecuteLiftCommand;
+        private System.Windows.Forms.ListBox lstLiftCommands;
+        private System.Windows.Forms.TabPage tbStart;
+        private System.Windows.Forms.TabPage tbMatrix;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.ComboBox ddlSwitchers;
+        private System.Windows.Forms.GroupBox gbSwitcherCommands;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Button btnSendRawSwitcherCommand;
+        private System.Windows.Forms.TextBox txtRawSwitcherCommand;
+        private System.Windows.Forms.Button btnExecuteSwitcherCommand;
+        private System.Windows.Forms.ListBox lstSwitcherCommands;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.TextBox txtRawSwitcherSource;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TextBox txtRawSwitcherDevice;
     }
 }
 

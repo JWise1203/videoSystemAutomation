@@ -26,6 +26,7 @@ namespace khVSAutomation
         }
     
         public virtual DbSet<tblMatrixSwitcher> tblMatrixSwitchers { get; set; }
+        public virtual DbSet<tblMatrixSwitcherCommand> tblMatrixSwitcherCommands { get; set; }
         public virtual DbSet<tblOperationStatu> tblOperationStatus { get; set; }
         public virtual DbSet<tblProjector> tblProjectors { get; set; }
         public virtual DbSet<tblProjectorLift> tblProjectorLifts { get; set; }
