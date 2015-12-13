@@ -10,11 +10,11 @@ namespace khVSAutomation
 
     class Logger
     {
-        private static StringBuilder m_objMemoryLog;
-        private static logLevel m_objLogLevel;
-        private static AutomationsEntities myDB = null; 
+        private StringBuilder m_objMemoryLog;
+        private logLevel m_objLogLevel;
+        private AutomationsEntities myDB = null; 
         private static string m_strSessionID;
-        private static string m_strClassName;
+        private string m_strClassName;
 
         public Logger(ref AutomationsEntities p_objMyDB, string p_strSessionID, logLevel p_objLogLevel = logLevel.ErrorOnly, string p_strClassName = "")
         {

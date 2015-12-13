@@ -101,6 +101,9 @@
     <Compile Include="tblMatrixSwitcher.cs">
       <DependentUpon>khData.tt</DependentUpon>
     </Compile>
+    <Compile Include="tblMatrixSwitcherCommand.cs">
+      <DependentUpon>khData.tt</DependentUpon>
+    </Compile>
     <Compile Include="tblOperationStatu.cs">
       <DependentUpon>khData.tt</DependentUpon>
     </Compile>

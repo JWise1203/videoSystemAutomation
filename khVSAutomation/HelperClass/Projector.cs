@@ -24,8 +24,8 @@ namespace khVSAutomation
 
         private PJLinkConnection m_objProjectorConnection;
 
-        private static AutomationsEntities myDB; 
-        private static Logger m_objLogger;
+        private AutomationsEntities myDB; 
+        private Logger m_objLogger;
         public Projector(string p_strName, string p_strIP, string p_strLiftAssociation, string p_strCurrentSession, logLevel p_objLogLevel = logLevel.ErrorOnly)
         {
             projectorName = p_strName;
@@ -46,23 +46,23 @@ namespace khVSAutomation
             var l_objStatus = actionStatus.None;
             try
             {
-                m_objLogger.logToMemory("Is there already a connection to the projector? ", l_objStatus, false);
+                m_objLogger.logToMemory(string.Format("{0}: {1}: Is there already a connection to the projector? ", l_strFunctionName, projectorName), l_objStatus, false);
                 if (m_objProjectorConnection == null)
                 {
                     m_objLogger.logToMemory("N", l_objStatus);
-                    m_objLogger.logToMemory("Attempting to Connect to the projector", l_objStatus);
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Connect to the projector", l_strFunctionName, projectorName), l_objStatus);
 
                     System.Net.IPAddress l_objAddress = null;
 
-                    m_objLogger.logToMemory("Checking the IP Address of the Projector", l_objStatus);
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Checking the IP Address of the Projector", l_strFunctionName, projectorName), l_objStatus);
                     if (System.Net.IPAddress.TryParse(projectorIP, out l_objAddress))
                     {
-                        m_objLogger.logToMemory("Attempting to Connect to the projector", l_objStatus);
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Connect to the projector", l_strFunctionName, projectorName), l_objStatus);
 
                         m_objProjectorConnection = new PJLinkConnection(projectorIP, "JBMIAProjectorLink");
 
                         l_objStatus = actionStatus.Success;
-                        m_objLogger.logToMemory("A Connection has been established!", l_objStatus);
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: A Connection has been established!", l_strFunctionName, projectorName), l_objStatus);
 
                         l_objConnectionStatus = projectorConnectionStatus.Connected;
                     }
@@ -81,7 +81,7 @@ namespace khVSAutomation
             catch (Exception e)
             {
                 l_objStatus = actionStatus.Error;
-                m_objLogger.logToMemory("Error Connecting to OR getting the status of the projector: " + e.ToString(), l_objStatus, true, true, l_strFunctionName);
+                m_objLogger.logToMemory(string.Format("{0}: {1}: Error Connecting to OR getting the status of the projector: {2}", l_strFunctionName, projectorName, e.ToString()), l_objStatus, true, true, l_strFunctionName);
                 l_objConnectionStatus = projectorConnectionStatus.Error;
             }
             finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
@@ -99,7 +99,7 @@ namespace khVSAutomation
          public string printProjectorStatus()
          {
              StringBuilder p_objProgress = new StringBuilder();
-
+             var l_strFunctionName = "printProjectorStatus()";
              try
              {
                  p_objProgress.AppendLine("Attempting to Print the Projector Status");
@@ -126,8 +126,9 @@ namespace khVSAutomation
              catch (Exception e)
              {
                  //Writes the error to the DB then throws the error up.
-                 throw new Exception(m_objLogger.logToDB("Error Printing the Projector Status: " + e.ToString(), actionStatus.Error, true, p_strFunctionName: "printProjectorStatus()"));
+                 throw new Exception(m_objLogger.logToDB(string.Format("{1}: {2}: Error Printing the Projector Status: {2}.", l_strFunctionName, projectorName, e.ToString()), actionStatus.Error, true, p_strFunctionName: "printProjectorStatus()"));
              }
+             finally { m_objLogger.writePendingToDB(p_strFunctionName: l_strFunctionName); }
 
              return p_objProgress.ToString();
          }
@@ -136,22 +137,20 @@ namespace khVSAutomation
          {
              var l_objStatus = actionStatus.None;
              var l_strFunctionName = "turnOnProjector()"; 
-             m_objLogger.logToMemory("Attempting to turn the projector On");
+             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to turn the projector On", l_strFunctionName, projectorName));
 
              try
              {
                  connectToProjector();
-
-                 //TODO:create a message bus so that these messages can be placed back in the functions
-                 m_objLogger.logToMemory("Turning Projector On");
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Turning Projector On", l_strFunctionName, projectorName));
                  m_objProjectorConnection.turnOn();
-                 m_objLogger.logToMemory("Projector is now:" + m_objProjectorConnection.powerQuery().ToString());
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Projector is now: {2]", l_strFunctionName, projectorName, m_objProjectorConnection.powerQuery().ToString()));
                  l_objStatus = actionStatus.Success;
              }
              catch (Exception e)
              {
                  l_objStatus = actionStatus.Error;
-                 m_objLogger.logToDB("Error Turning the Projector On: " + e.ToString(), l_objStatus, true, p_strFunctionName: l_strFunctionName);
+                 m_objLogger.logToDB(string.Format("{0}: {1}: Error Turning the Projector On: {2}", l_strFunctionName, projectorName, e.ToString()), l_objStatus);
              }
              finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
 
@@ -164,35 +163,35 @@ namespace khVSAutomation
              var l_objStatus = actionStatus.None;
              var l_strFunctionName = "turnOffProjector()"; 
 
-             m_objLogger.logToMemory("Attempting to turn the Projector Off......");
+             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to turn the Projector Off......", l_strFunctionName, projectorName));
              try
              {
                  connectToProjector();
 
                  //TODO:create a message bus so that these messages can be displayed real time
-                 m_objLogger.logToMemory("Turning Projector Off");
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Turning Projector Off", l_strFunctionName, projectorName));
                  m_objProjectorConnection.turnOff();
-                 m_objLogger.logToMemory("Projector is now:" + m_objProjectorConnection.powerQuery().ToString());
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Projector is now: {2}", l_strFunctionName, projectorName, m_objProjectorConnection.powerQuery().ToString()));
                  l_objStatus = actionStatus.Success;
              }
              catch (Exception e)
              {
                  l_objStatus = actionStatus.Error;
-                 m_objLogger.logToDB("Error Turning Off the Projector: " + e.ToString(), l_objStatus, true, p_strFunctionName: l_strFunctionName);
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Error Turning Off the Projector: {2}", l_strFunctionName, projectorName, e.ToString()), l_objStatus);
              }
              finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
 
              return l_objStatus;
          }
 
-         public actionStatus change_Input(rv.InputCommand.InputType p_objInputType, int p_intPort, string p_strInputName)
+         private actionStatus change_Input(rv.InputCommand.InputType p_objInputType, int p_intPort, string p_strInputName)
          {
              var l_objStatus = actionStatus.None;
-             var l_strFunctionName = "turnOffProjector()"; 
+             var l_strFunctionName = "change_Input()"; 
 
              try
              {
-                 m_objLogger.logToMemory("Attempting to Change the Projector Input to " + p_strInputName);
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Change the Projector Input to {2}", l_strFunctionName, projectorName, p_strInputName));
 
                  InputCommand l_objInputCommand = new InputCommand(p_objInputType, p_intPort);
 
@@ -209,7 +208,7 @@ namespace khVSAutomation
              catch (Exception e)
              {
                  l_objStatus = actionStatus.Error;
-                 m_objLogger.logToDB("Error Changing the Projector Input to " + p_strInputName + ": " + e.ToString(), l_objStatus, true, p_strFunctionName: "change_Input()");
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Error Changing the Projector Input to {2}. Error: {3}", l_strFunctionName, projectorName, p_strInputName, e.ToString()), l_objStatus);
              }
              finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
 
@@ -232,12 +231,96 @@ namespace khVSAutomation
              try
              {
                  connectToProjector();
-                 m_objLogger.logToMemory("The Power Status of the Projector is: " + m_objProjectorConnection.powerQuery().ToString());
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: The Power Status of the Projector is: {2}", l_strFunctionName, projectorName, m_objProjectorConnection.powerQuery().ToString()));
                  return m_objProjectorConnection.powerQuery().ToString();
              }
              catch (Exception e) { throw e; }
              finally { m_objLogger.writePendingToDB(actionStatus.None, p_strFunctionName: l_strFunctionName); }
          }
+
+         public List<string> getCommandNames()
+         {
+             var l_strFunctionName = "getCommandNames()";
+             List<string> l_lstrCommands = new List<string>();
+             //TODO: Add Safer Logic so that a list is not provided if the projector is not available.
+             l_lstrCommands.Add("Power On");
+             l_lstrCommands.Add("Power Off");
+             l_lstrCommands.Add("HDMI");
+             l_lstrCommands.Add("VGA");
+             return l_lstrCommands;
+         }
+
+         /// <summary>
+         /// Finds the value of the Command Name passed in and then sends the command value to the Projector to execute.
+         /// </summary>
+         /// <param name="p_strCommandName"></param>
+         /// <returns></returns>
+         public actionStatus SendCommandByName(string p_strCommandName)
+         {
+             var l_objStatus = actionStatus.None;
+             var l_strFunctionName = "SendCommandByName()";
+             try
+             {
+                 //Determine if this is aspecial functionality command
+                 switch (p_strCommandName)
+                 {
+                     case "HDMI":
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, projectorName, "changeProjectorToHDMI()", p_strCommandName));
+                         l_objStatus = changeProjectorToHDMI();
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: {2} completed with a status of : {3}.", l_strFunctionName, projectorName, "changeProjectorToHDMI()", l_objStatus), l_objStatus);
+                         break;
+                     case "VGA":
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, projectorName, "changeProjectorToVGA()", p_strCommandName));
+                         l_objStatus = changeProjectorToVGA();
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: {2} completed with a status of : {3}.", l_strFunctionName, projectorName, "changeProjectorToVGA()", l_objStatus), l_objStatus);
+                         break;
+                     case "Power On":
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, projectorName, "turnOnProjector()", p_strCommandName));
+                         l_objStatus = turnOnProjector();
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: {2} completed with a status of : {3}.", l_strFunctionName, projectorName, "turnOnProjector()", l_objStatus), l_objStatus);
+                         
+                         break;
+                     case "Power Off":
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, projectorName, "turnOffProjector()", p_strCommandName));
+                         l_objStatus = turnOffProjector();
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: {2} completed with a status of : {3}.", l_strFunctionName, projectorName, "turnOffProjector()", l_objStatus), l_objStatus);
+                         break;
+                     default:
+                         throw new Exception(string.Format("{0}: {1}: {2} Command NOT Found.", l_strFunctionName, projectorName, p_strCommandName));
+                         break;
+                 }
+             }
+             catch (Exception e)
+             {
+                 l_objStatus = actionStatus.Error;
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Error Sending Command By Name: {2}", l_strFunctionName, projectorName, e.ToString()), l_objStatus);
+             }
+             finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
+
+             return l_objStatus;
+         }
+
+         public actionStatus SendCommandByValue(string p_strCommand)
+         {
+             var l_objStatus = actionStatus.None;
+             var l_strFunctionName = "SendCommandByValue()";
+
+             try
+             {
+                 //The Projector Commands are property specific and therefore may not be able to be generalized at this time.
+                 throw new Exception("This functionality is not implemented at this time.");
+             }
+             catch (Exception e)
+             {
+                 l_objStatus = actionStatus.Error;
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Error Sending Command to the Projector Lift: {2}.", l_strFunctionName, projectorName, e.ToString()), l_objStatus);
+             }
+             finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
+
+             return l_objStatus;
+         }
+
+
 
          public string GetDeviceInfo(bool l_blnBasic = false)
          {
