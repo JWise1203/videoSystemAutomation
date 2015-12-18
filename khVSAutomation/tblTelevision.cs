@@ -18,6 +18,7 @@ namespace khVSAutomation
         public string Name { get; set; }
         public string IPAddress { get; set; }
         public string MACAddress { get; set; }
+        public string WakeUpAlternate { get; set; }
         public bool AutoOnOff { get; set; }
         public string CookieData { get; set; }
         public string CommandList { get; set; }

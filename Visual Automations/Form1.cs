@@ -24,15 +24,12 @@ namespace Visual_Automations
     {
         static DateTime StartTime;
 
-        private static int m_intCheckSum;
-        private static PJLinkConnection c = null;
+        //private static PJLinkConnection c = null;
         private static Automation hallAutomations = null;
 
         public Form1()
         {
             InitializeComponent();
-
-            m_intCheckSum = 0;
 
             StartTime = DateTime.Now;
 
@@ -79,11 +76,6 @@ namespace Visual_Automations
             }
         }
 
-        private void ConfigureStartUp()
-        {
-
-        }
-
         private void ConfigureErrorsTab()
         {
             //throw new NotImplementedException();
@@ -93,6 +85,258 @@ namespace Visual_Automations
         {
             //throw new NotImplementedException();
         }
+
+        #region Start Tab Stuff
+        private void ConfigureStartUp()
+        {
+            LoadMatrixSourceDropDowns();
+        }
+
+        private void LoadMatrixSourceDropDowns()
+        {
+            var l_objTempDDLItems = new string[] { "Computer", "Stage HDMI", "Apple TV", "Roku" };
+
+            var l_strTempSource = ddlStart_All_Source.SelectedIndex > -1 ? ddlStart_All_Source.SelectedItem.ToString() : "";
+            ddlStart_All_Source.Items.Clear();
+            ddlStart_All_Source.Items.AddRange(l_objTempDDLItems);
+            if (l_strTempSource.Length > 0)
+            {
+                try { ddlStart_All_Source.SelectedItem = l_strTempSource; } catch { ddlStart_All_Source.SelectedIndex = -1; }
+            }
+            if (ddlStart_All_Source.SelectedIndex == -1)
+            {
+                try { ddlStart_All_Source.SelectedItem = "Computer"; } catch { ddlStart_All_Source.SelectedIndex = -1; }
+            }
+                        
+
+            l_strTempSource = ddlStart_BR_TV_Source.SelectedIndex > -1 ? ddlStart_BR_TV_Source.SelectedItem.ToString() : "";
+            ddlStart_BR_TV_Source.Items.Clear();
+            ddlStart_BR_TV_Source.Items.AddRange(l_objTempDDLItems);
+            if (l_strTempSource.Length > 0)
+            {
+                try { ddlStart_BR_TV_Source.SelectedItem = l_strTempSource; } catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
+            }
+            if (ddlStart_BR_TV_Source.SelectedIndex == -1)
+            {
+                try { ddlStart_BR_TV_Source.SelectedItem = "Computer"; } catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
+            }
+
+            l_strTempSource = ddlStart_MA_Proj_Source.SelectedIndex > -1 ? ddlStart_MA_Proj_Source.SelectedItem.ToString() : "";
+            ddlStart_MA_Proj_Source.Items.Clear();
+            ddlStart_MA_Proj_Source.Items.AddRange(l_objTempDDLItems);
+            if (l_strTempSource.Length > 0)
+            {
+                try { ddlStart_MA_Proj_Source.SelectedItem = l_strTempSource; } catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
+            }
+            if (ddlStart_MA_Proj_Source.SelectedIndex == -1)
+            {
+                try { ddlStart_MA_Proj_Source.SelectedItem = "Computer"; } catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
+            }
+            
+            l_strTempSource = ddlStart_MA_TV_Source.SelectedIndex > -1 ? ddlStart_MA_TV_Source.SelectedItem.ToString() : "";
+            ddlStart_MA_TV_Source.Items.Clear();
+            ddlStart_MA_TV_Source.Items.AddRange(l_objTempDDLItems);
+            if (l_strTempSource.Length > 0)
+            {
+                try { ddlStart_MA_TV_Source.SelectedItem = l_strTempSource; } catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
+            }
+            if (ddlStart_MA_TV_Source.SelectedIndex == -1)
+            {
+                try { ddlStart_MA_TV_Source.SelectedItem = "Roku"; } catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
+            }
+        }
+
+        private void btnStart_MA_TV_On_Click(object sender, EventArgs e)
+        {
+            var l_strTVNames = new List<string>();
+            var l_objProgress = new StringBuilder();
+            foreach (var strTV in hallAutomations.AllTelevisions)
+            {
+                var l_strTVName = strTV.Split(';')[0];
+                if (l_strTVName.Contains("Auditorium"))
+                {
+                    l_strTVNames.Add(l_strTVName);
+                }
+            }
+
+            if (l_strTVNames.Count > 0)
+            {
+                hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
+                //Switch the Source
+                if (ddlStart_MA_TV_Source.SelectedIndex > -1)
+                    hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "4", getSourceNumber(ddlStart_MA_TV_Source.SelectedItem.ToString()));
+            }
+        }
+
+        private string getSourceNumber(string p_strSourceName)
+        {
+            var l_strSourceNumber = "0";
+
+            switch (p_strSourceName)
+            {
+                case "Computer":
+                    l_strSourceNumber = "1";
+                    break;
+                case "Stage HDMI":
+                    l_strSourceNumber = "2";
+                    break;
+                case "Apple TV":
+                    l_strSourceNumber = "3";
+                    break;
+                case "Roku":
+                    l_strSourceNumber = "4";
+                    break;
+            }
+            return l_strSourceNumber;
+        }
+
+        private void btnStart_MA_TV_Off_Click(object sender, EventArgs e)
+        {
+            var l_strTVNames = new List<string>();
+            var l_objProgress = new StringBuilder();
+            foreach (var strTV in hallAutomations.AllTelevisions)
+            {
+                var l_strTVName = strTV.Split(';')[0];
+                if (l_strTVName.Contains("Auditorium"))
+                {
+                    l_strTVNames.Add(l_strTVName);
+                }
+            }
+            if (l_strTVNames.Count > 0)
+                hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
+        }
+
+        private void ddlStart_MA_TV_Source_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //not needed at this time
+        }
+
+        private void btnStart_MA_TV_Source_Click(object sender, EventArgs e)
+        {
+            if (ddlStart_MA_TV_Source.SelectedIndex > -1)
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "4", getSourceNumber(ddlStart_MA_TV_Source.SelectedItem.ToString()));
+        }
+
+        private void btnStart_MA_Proj_On_Click(object sender, EventArgs e)
+        {
+            var l_objProgress = new StringBuilder();
+            var l_objStatus = hallAutomations.turnSystemOn(new List<string>(), new List<string>(){"Auditorium Projector"}, l_objProgress);
+            if (ddlStart_MA_TV_Source.SelectedIndex > -1)
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "4", getSourceNumber(ddlStart_MA_TV_Source.SelectedItem.ToString()));
+        }
+
+        private void btnStart_MA_Proj_Off_Click(object sender, EventArgs e)
+        {
+            var l_objProgress = new StringBuilder();
+            var l_objStatus = hallAutomations.turnSystemOff(new List<string>(), new List<string>() { "Auditorium Projector" }, l_objProgress);
+        }
+
+        private void ddlStart_MA_Proj_Source_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //Not Needed at this time
+        }
+
+        private void btnStart_MA_Proj_Source_Click(object sender, EventArgs e)
+        {
+            if (ddlStart_MA_Proj_Source.SelectedIndex > -1)
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "1", getSourceNumber(ddlStart_MA_Proj_Source.SelectedItem.ToString()));
+        }
+
+        private void btnStart_BR_TV_On_Click(object sender, EventArgs e)
+        {
+            var l_strTVNames = new List<string>();
+            var l_objProgress = new StringBuilder();
+            l_strTVNames.Add("Library TV");
+            if (chkStart_BR_IncOffice.Checked)
+                l_strTVNames.Add("Office TV");
+            if (l_strTVNames.Count > 0)
+            {
+                hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
+                if (ddlStart_BR_TV_Source.SelectedIndex > -1)
+                {
+                    hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "2", getSourceNumber(ddlStart_BR_TV_Source.SelectedItem.ToString()));
+                    if (chkStart_BR_IncOffice.Checked)
+                        hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "3", getSourceNumber(ddlStart_BR_TV_Source.SelectedItem.ToString()));
+                }
+            }
+        }
+
+        private void btnStart_BR_TV_Off_Click(object sender, EventArgs e)
+        {
+            var l_strTVNames = new List<string>();
+            var l_objProgress = new StringBuilder();
+            l_strTVNames.Add("Library TV");
+            if (chkStart_BR_IncOffice.Checked)
+                l_strTVNames.Add("Office TV");
+            if (l_strTVNames.Count > 0)
+                hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
+        }
+
+        private void ddlStart_BR_TV_Source_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //Not Needed at this time
+        }
+
+        private void btnStart_BR_TV_Source_Click(object sender, EventArgs e)
+        {
+            if (ddlStart_BR_TV_Source.SelectedIndex > -1)
+            {
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "2", getSourceNumber(ddlStart_BR_TV_Source.SelectedItem.ToString()));
+                if (chkStart_BR_IncOffice.Checked)
+                    hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "3", getSourceNumber(ddlStart_BR_TV_Source.SelectedItem.ToString()));
+            }
+        }
+
+        private void btnStart_All_On_Click(object sender, EventArgs e)
+        {
+            var l_strTVNames = new List<string>();
+            var l_objProgress = new StringBuilder();
+            foreach (var strTV in hallAutomations.AllTelevisions)
+                l_strTVNames.Add(strTV.Split(';')[0]);
+            var l_strProjNames = new List<string>() { "Auditorium Projector" };
+            hallAutomations.turnSystemOn(l_strTVNames, l_strProjNames, l_objProgress);
+
+            if (ddlStart_All_Source.SelectedIndex > -1)
+            {
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "1", getSourceNumber(ddlStart_All_Source.SelectedItem.ToString()));
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "2", getSourceNumber(ddlStart_All_Source.SelectedItem.ToString()));
+                if (chkStart_BR_IncOffice.Checked)
+                    hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "3", getSourceNumber(ddlStart_All_Source.SelectedItem.ToString()));
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "4", getSourceNumber(ddlStart_All_Source.SelectedItem.ToString()));
+            }
+        }
+
+        private void btnStart_All_Off_Click(object sender, EventArgs e)
+        {
+            var l_strTVNames = new List<string>();
+            var l_objProgress = new StringBuilder();
+            foreach (var strTV in hallAutomations.AllTelevisions)
+                l_strTVNames.Add(strTV.Split(';')[0]);
+            var l_strProjNames = new List<string>() { "Auditorium Projector" };
+            hallAutomations.turnSystemOff(l_strTVNames, l_strProjNames, l_objProgress);
+        }
+
+        private void ddlStart_All_Source_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //Not Needed at this time
+        }
+
+        private void btnStart_All_Source_Click(object sender, EventArgs e)
+        {
+            if (ddlStart_MA_TV_Source.SelectedIndex > -1)
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "4", getSourceNumber(ddlStart_MA_TV_Source.SelectedItem.ToString()));
+            if (ddlStart_MA_Proj_Source.SelectedIndex > -1)
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "1", getSourceNumber(ddlStart_MA_Proj_Source.SelectedItem.ToString()));
+            if (ddlStart_BR_TV_Source.SelectedIndex > -1)
+            {
+                hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "2", getSourceNumber(ddlStart_BR_TV_Source.SelectedItem.ToString()));
+                if (chkStart_BR_IncOffice.Checked)
+                    hallAutomations.SendMatrixCommandByValue("Main Auditorium Matrix Switcher", "3", "3", getSourceNumber(ddlStart_BR_TV_Source.SelectedItem.ToString()));
+            }
+        }
+
+        #endregion
+
 
         #region Matrix Switcher Stuff
         private void ConfigureMatrixTab()
@@ -642,29 +886,27 @@ namespace Visual_Automations
             StringBuilder l_objProgress = new StringBuilder();
             actionStatus l_objStatus = actionStatus.None;
 
-            var strTVsOn = "";
+            var strTVsOn = new List<string>();
             foreach (Control c in gbTVs.Controls)
             {
                 if (c is CheckBox)
                 {
                     var cboDynamic = (CheckBox)c;
-                    if (cboDynamic.Checked) strTVsOn += cboDynamic.Text + "|";
+                    if (cboDynamic.Checked) strTVsOn.Add(cboDynamic.Text);
                 }
             }
-            strTVsOn = (strTVsOn.Length > 0 ? strTVsOn.Substring(0, strTVsOn.Length - 1) : "");
 
-            var strProjsOn = "";
+            var strProjsOn = new List<string>();
             foreach (Control c in gbProjectors.Controls)
             {
                 if (c is CheckBox)
                 {
                     var cboDynamic = (CheckBox)c;
-                    if (cboDynamic.Checked) strProjsOn += cboDynamic.Text + "|";
+                    if (cboDynamic.Checked) strProjsOn.Add(cboDynamic.Text);
                 }
             }
-            strProjsOn = (strProjsOn.Length > 0 ? strProjsOn.Substring(0, strProjsOn.Length - 1) : "");
 
-            if (strProjsOn == "" && strTVsOn == "") MessageBox.Show("No devices were selected and therefore This action will not be performed");
+            if (strProjsOn.Count == 0 && strTVsOn.Count == 0) MessageBox.Show("No devices were selected and therefore This action will not be performed");
             else l_objStatus = hallAutomations.turnSystemOn(strTVsOn, strProjsOn, l_objProgress);
             //Console.Write(l_objProgress.ToString());
 
@@ -688,29 +930,27 @@ namespace Visual_Automations
             StringBuilder l_objProgress = new StringBuilder();
             actionStatus l_objStatus = actionStatus.None;
 
-            var strTVsOff = "";
+            var strTVsOff = new List<string>();
             foreach (Control c in gbTVs.Controls)
             {
                 if (c is CheckBox)
                 {
                     var cboDynamic = (CheckBox)c;
-                    if (cboDynamic.Checked) strTVsOff += cboDynamic.Text + "|";
+                    if (cboDynamic.Checked) strTVsOff.Add(cboDynamic.Text);
                 }
             }
-            strTVsOff = (strTVsOff.Length > 0 ? strTVsOff.Substring(0, strTVsOff.Length - 1) : "");
 
-            var strProjsOff = "";
+            var strProjsOff = new List<string>();
             foreach (Control c in gbProjectors.Controls)
             {
                 if (c is CheckBox)
                 {
                     var cboDynamic = (CheckBox)c;
-                    if (cboDynamic.Checked) strProjsOff += cboDynamic.Text + "|";
+                    if (cboDynamic.Checked) strProjsOff.Add(cboDynamic.Text);
                 }
             }
-            strProjsOff = (strProjsOff.Length > 0 ? strProjsOff.Substring(0, strProjsOff.Length - 1) : "");
 
-            if (strProjsOff == "" && strTVsOff == "") MessageBox.Show("No devices were selected and therefore This action will not be performed");
+            if (strProjsOff.Count == 0 && strTVsOff.Count == 0) MessageBox.Show("No devices were selected and therefore This action will not be performed");
             else l_objStatus = hallAutomations.turnSystemOff(strTVsOff, strProjsOff, l_objProgress);
             //Console.Write(l_objProgress.ToString());
 

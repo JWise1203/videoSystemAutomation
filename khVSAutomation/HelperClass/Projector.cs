@@ -287,7 +287,6 @@ namespace khVSAutomation
                          break;
                      default:
                          throw new Exception(string.Format("{0}: {1}: {2} Command NOT Found.", l_strFunctionName, projectorName, p_strCommandName));
-                         break;
                  }
              }
              catch (Exception e)

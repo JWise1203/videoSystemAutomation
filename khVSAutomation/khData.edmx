@@ -79,6 +79,7 @@
           <Property Name="Name" Type="varchar" MaxLength="100" Nullable="false" />
           <Property Name="IPAddress" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="MACAddress" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="WakeUpAlternate" Type="nvarchar" MaxLength="50" />
           <Property Name="AutoOnOff" Type="bit" Nullable="false" />
           <Property Name="CookieData" Type="nvarchar(max)" />
           <Property Name="CommandList" Type="nvarchar(max)" />
@@ -184,6 +185,7 @@
           <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="IPAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="MACAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="WakeUpAlternate" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="AutoOnOff" Type="Boolean" Nullable="false" />
           <Property Name="CookieData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="CommandList" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
@@ -294,6 +296,7 @@
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="IPAddress" ColumnName="IPAddress" />
                 <ScalarProperty Name="MACAddress" ColumnName="MACAddress" />
+                <ScalarProperty Name="WakeUpAlternate" ColumnName="WakeUpAlternate" />
                 <ScalarProperty Name="AutoOnOff" ColumnName="AutoOnOff" />
                 <ScalarProperty Name="CookieData" ColumnName="CookieData" />
                 <ScalarProperty Name="CommandList" ColumnName="CommandList" />
