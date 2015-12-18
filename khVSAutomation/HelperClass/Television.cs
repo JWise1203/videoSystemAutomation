@@ -27,6 +27,7 @@ namespace khVSAutomation
         public bool TelevisionRegistered { get; set; }
         public string TelevisionGeneration { get; set; }
         public List<SonyCommands> TelevisionCommands { get; set; }
+        private string TelevisionAlternateWakeCommandName { get; set; }
 
 
         private AutomationsEntities myDB;
@@ -52,6 +53,7 @@ namespace khVSAutomation
             TelevisionIPAddress = p_objtv.IPAddress;
             TelevisionMACAddress = p_objtv.MACAddress;
             TelevisionGeneration = "3"; //Currently operations are coded for Generation 3 TVs.
+            TelevisionAlternateWakeCommandName = string.IsNullOrEmpty(p_objtv.WakeUpAlternate) ? "" : p_objtv.WakeUpAlternate;
             m_strCookieData = string.IsNullOrWhiteSpace(p_objtv.CookieData) ? "" : p_objtv.CookieData;
             m_strCommandList = string.IsNullOrWhiteSpace(p_objtv.CommandList) ? "" : p_objtv.CommandList;
 
@@ -387,7 +389,6 @@ namespace khVSAutomation
         {
             var l_objStatus = actionStatus.None;
             var l_strFunctionName = "SendCommandByName()";
-            var l_blnCommandLocated = false;
             try
             {
                 //Determine if this is aspecial functionality command
@@ -424,29 +425,18 @@ namespace khVSAutomation
                             }
                         }
 
-
-                        if (TelevisionCommands.Count > 0)
+                        var l_strCommandValue = GetCommandValueByName(p_strCommandName);
+                        if (l_strCommandValue != "")
                         {
-                            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to locate {2} in the available list of Television commands.", l_strFunctionName, TelevisionName, p_strCommandName));
-                            foreach (var l_objCommand in TelevisionCommands)
-                            {
-                                if (l_objCommand.name == p_strCommandName)
-                                {
-                                    l_blnCommandLocated = true;
-                                    m_objLogger.logToMemory(string.Format("{0}: {1}: {2} Located. Attempted to Send {3} to the Television.", l_strFunctionName, TelevisionName, p_strCommandName, l_objCommand.value));
-                                    l_objStatus = SendCommandByValue(l_objCommand.value);
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: {2} Located. Attempted to Send {3} to the Television.", l_strFunctionName, TelevisionName, p_strCommandName, l_strCommandValue));
+                            l_objStatus = SendCommandByValue(l_strCommandValue);
 
-                                    if (l_objStatus == actionStatus.Error) 
-                                        throw new Exception(string.Format("Attempt to send {0} to the Television Failed.", l_objCommand.value));
-                                    break;
-                                }
-                            }
+                            if (l_objStatus == actionStatus.Error)
+                                throw new Exception(string.Format("Attempt to send {0} to the Television Failed.", l_strCommandValue));
                         }
                         else
-                            throw new Exception("There were no commands available in the Television Command List. Operation Cancelled.");
-
-                        if (!l_blnCommandLocated) 
                             throw new Exception(string.Format("{0} Could not be located. Operation Cancelled.", p_strCommandName));
+
                         break;
                 }
             }
@@ -458,6 +448,34 @@ namespace khVSAutomation
             finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
 
             return l_objStatus;
+        }
+
+        private string GetCommandValueByName(string p_strCommandName)
+        {
+            var l_strCommandValue = "";
+            var l_strFunctionName = "GetCommandValueByName()";
+            var l_blnCommandLocated = false;
+
+            if (TelevisionCommands.Count > 0)
+            {
+                m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to locate {2} in the available list of Television commands.", l_strFunctionName, TelevisionName, p_strCommandName));
+                foreach (var l_objCommand in TelevisionCommands)
+                {
+                    if (l_objCommand.name == p_strCommandName)
+                    {
+                        l_strCommandValue = l_objCommand.value;
+                        l_blnCommandLocated = true;
+                        break;
+                    }
+                }
+            }
+            else
+                m_objLogger.logToMemory("There were no commands available in the Television Command List. Operation Cancelled.");
+
+            m_objLogger.logToMemory(string.Format("{0}: {1}: {2} Located? {3}.", l_strFunctionName, TelevisionName, p_strCommandName, l_blnCommandLocated.ToString()));
+            m_objLogger.writePendingToDB(p_strFunctionName: l_strFunctionName);
+
+            return l_strCommandValue;
         }
 
         private actionStatus ExecuteHDMICommand(string p_strHDMICommandName)
@@ -573,6 +591,14 @@ namespace khVSAutomation
         /// <returns></returns>
         public actionStatus WakeupTV()
         {
+            if (TelevisionAlternateWakeCommandName == "")
+                return WakeupTVWOL();
+            else
+                return WakeupTVByCommandName(TelevisionAlternateWakeCommandName);
+        }
+
+        private actionStatus WakeupTVWOL()
+        {
             var l_objStatus = actionStatus.None;
             var l_strFunctionName = "WakeupTV()";
 
@@ -615,16 +641,60 @@ namespace khVSAutomation
                     m_objLogger.logToMemory(string.Format("{0}: {1}: Registration Check Completed with a status of {2}.", l_strFunctionName, TelevisionName, l_objRegistrationStatus), l_objRegistrationStatus);
                 }
                 catch (Exception e)
-                { 
+                {
                     //DOING NOTHING FOR NOW - THIS MAY BE TOO EARLY FOR THIS KIND OF OPERATION
                     m_objLogger.logToMemory(string.Format("{0}: {1}: There was an error trying to check the Registration after waking the TV {2}. Since the Wake Operation was successful we will NOT Abort operations at this time.", l_strFunctionName, TelevisionName, e.ToString()), actionStatus.Error);
                 }
-                
+
             }
             catch (Exception e)
             {
                 l_objStatus = actionStatus.Error;
                 m_objLogger.logToMemory(string.Format("{0}: {1}: Error Waking the TV: {2}.", l_strFunctionName, TelevisionName, e.ToString()), l_objStatus);
+            }
+            finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
+
+            return l_objStatus;
+        }
+
+        private actionStatus WakeupTVByCommandName(string p_strCommandName)
+        {
+            var l_objStatus = actionStatus.None;
+            var l_strFunctionName = "WakeupTVByCommandName()";
+
+            try
+            {
+                var l_strCommandValue = "";
+                //Allow Administrators to include a '|' character and the command value that they wish to act as a wake up call
+                if (p_strCommandName.Contains('|'))
+                    l_strCommandValue = p_strCommandName.Split('|')[1]; //Short Circuit and execute by Value
+                else
+                    l_strCommandValue = GetCommandValueByName(p_strCommandName); //Try To Find the Value in the Available List of Commands
+
+                if (l_strCommandValue != "")
+                {
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Power On the TV.", l_strFunctionName, TelevisionName));
+                    l_objStatus = SendCommandByValue(l_strCommandValue);
+
+                    switch (l_objStatus)
+                    {
+                        case actionStatus.Error:
+                            throw new Exception("Error Returned from SendDirectCommand() - Power On - was not successful.");
+                        case actionStatus.PartialError:
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: A partial error was returned from the call to send the command. The Command may not have executed as expected.", l_strFunctionName, TelevisionName), l_objStatus);
+                            break;
+                        case actionStatus.Success:
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: Success.", l_strFunctionName, TelevisionName), l_objStatus);
+                            break;
+                    }
+                }
+                else
+                    throw new Exception(string.Format("No Wakeup Value Found for the specific Command Name: {0}. This could be due to the Command Not being implemented in the Current TV version.", p_strCommandName));
+            }
+            catch (Exception e)
+            {
+                l_objStatus = actionStatus.Error;
+                m_objLogger.logToMemory(string.Format("{0}: {1}: Error Powering On the TV: {2}.", l_strFunctionName, TelevisionName, e.ToString()), l_objStatus);
             }
             finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
 

@@ -23,6 +23,7 @@ CREATE TABLE [dbo].[tblTelevision](
 	[Name] [varchar](100) NOT NULL,
 	[IPAddress] [nvarchar](50) NOT NULL,
 	[MACAddress] [nvarchar](50) NOT NULL,
+	[WakeUpAlternate] [nvarchar](50) NULL,
 	[AutoOnOff] [bit] NOT NULL CONSTRAINT [DF_tblTelevision_AutoOnOff]  DEFAULT (1),
 	[CookieData] [nvarchar](max) NULL,
 	[CommandList] [nvarchar](max) NULL,
@@ -40,10 +41,10 @@ SET ANSI_PADDING OFF
 GO
 
 --TODO: SET THE RIGHT IP AND MAC FOR THE AUDITORIUM TVS
-INSERT INTO [dbo].[tblTelevision] VALUES(1,'Library TV','192.168.1.6','FC:F1:52:A0:F0:56', 1,NULL, NULL,'Russell Ford',getutcdate());
-INSERT INTO [dbo].[tblTelevision] VALUES(2,'Office TV','192.168.1.7','FC:F1:52:D3:51:D8', 1,NULL,NULL, 'Russell Ford',getutcdate());
-INSERT INTO [dbo].[tblTelevision] VALUES(3,'Auditorium TV Left','192.168.1.8','FC:F1:52:A0:F0:56', 1,NULL,NULL, 'Russell Ford',getutcdate());
-INSERT INTO [dbo].[tblTelevision] VALUES(4,'Auditorium TV Right','192.168.1.9','FC:F1:52:D3:51:D8', 1,NULL,NULL, 'Russell Ford',getutcdate());
+INSERT INTO [dbo].[tblTelevision] VALUES(1,'Library TV','192.168.1.6','FC:F1:52:A0:F0:56',NULL,1,NULL, NULL,'Russell Ford',getutcdate());
+INSERT INTO [dbo].[tblTelevision] VALUES(2,'Office TV','192.168.1.7','FC:F1:52:D3:51:D8',NULL,1,NULL,NULL, 'Russell Ford',getutcdate());
+INSERT INTO [dbo].[tblTelevision] VALUES(3,'Auditorium TV Left','192.168.1.10','AC:9B:0A:38:EC:C0','WakeUp',1,NULL,NULL, 'Russell Ford',getutcdate());
+INSERT INTO [dbo].[tblTelevision] VALUES(4,'Auditorium TV Right','192.168.1.11','AC:9B:0A:C9:E4:50','WakeUp',1,NULL,NULL, 'Russell Ford',getutcdate());
 
 PRINT
 '*** Projector Table Generation ***'

@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="2252b56207fa4ff082b007ec1983d34e" Name="Diagram1">
+      <Diagram DiagramId="cc8a1e6fe24a44d69faaedb4b55f7a0f" Name="Diagram1">
         <EntityTypeShape EntityType="AutomationsModel.tblMatrixSwitcher" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="AutomationsModel.tblMatrixSwitcherCommand" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="AutomationsModel.tblOperationStatu" Width="1.5" PointX="2.75" PointY="3.75" IsExpanded="true" />

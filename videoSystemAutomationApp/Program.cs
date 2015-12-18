@@ -24,7 +24,7 @@ namespace videoSystemAutomationApp
     {
         static DateTime StartTime;
 
-        private static PJLinkConnection c = null;
+        //private static PJLinkConnection c = null;
         private static Automation hallAutomations = null;
 
         static void Main(string[] args)

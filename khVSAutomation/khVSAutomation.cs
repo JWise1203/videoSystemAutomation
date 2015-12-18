@@ -83,15 +83,15 @@ namespace khVSAutomation
         private static List<MatrixSwitcher> m_objMatrixSwitchers = null;
         
         //private static string m_strPublicTelevisionInfo;
-        private static string m_strPublicProjectorInfo;
-        private static string m_strPublicSwitcherInfo;
+        //private static string m_strPublicProjectorInfo;
+        //private static string m_strPublicSwitcherInfo;
 
         //DB Object - Allow Save/Load from DB instead of from File
         private static AutomationsEntities myDB = null; 
         private static string m_cstrSessionID = "";
         private static logLevel m_objLogLevel;
         private static Logger m_objLogger = null;
-        private static SonyAPI_Lib m_objSonyAPI = null;
+        //private static SonyAPI_Lib m_objSonyAPI = null;
 
         #region Configuration/Information
 
@@ -472,13 +472,13 @@ namespace khVSAutomation
             return l_objOverallStatus;
         }
 
-        private bool isItemInList(string p_strCurrentItem, string p_strList, char p_strDelimiter)
+        private bool isItemInList(string p_strCurrentItem, List<string> p_strList)
         {
             var l_blnIn = false;
 
             try
             {
-                foreach(var strListItem in p_strList.Split(p_strDelimiter))
+                foreach(var strListItem in p_strList)
                 {
                     if (strListItem.Equals(p_strCurrentItem, StringComparison.OrdinalIgnoreCase)) 
                     {
@@ -569,7 +569,8 @@ namespace khVSAutomation
             return l_objTVStatus;
         }
 
-        public actionStatus turnSystemOn(string p_strTVsOn, string p_strProjsOn, StringBuilder p_objProgress = null)
+        //public actionStatus turnSystemOn(string p_strTVsOn, string p_strProjsOn, StringBuilder p_objProgress = null)
+        public actionStatus turnSystemOn(List<string> p_strTVsOn, List<string> p_strProjsOn, StringBuilder p_objProgress = null)
         {
             //TODO: Need to switch these to all DB logging - Still TODO
             var l_objOverallStatus = actionStatus.None;
@@ -583,7 +584,7 @@ namespace khVSAutomation
                 //TVs
                 foreach (var l_objTelevision in m_objTelevisions)
                 {
-                    if(isItemInList(l_objTelevision.TelevisionName, p_strTVsOn, '|'))
+                    if(isItemInList(l_objTelevision.TelevisionName, p_strTVsOn))
                     {
                         m_objLogger.logToMemory("Waking up TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
                         DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.WakeupTV()));
@@ -605,7 +606,7 @@ namespace khVSAutomation
                 //Projectors
                 foreach (var l_objProjector in m_objProjectors)
                 {
-                    if(isItemInList(l_objProjector.projectorName, p_strProjsOn, '|'))
+                    if(isItemInList(l_objProjector.projectorName, p_strProjsOn))
                     {
                         switch (l_objProjector.checkProjectorPowerStatus())
                         {
@@ -814,7 +815,7 @@ namespace khVSAutomation
             return l_objOverallStatus;
         }
 
-        public actionStatus turnSystemOff(string p_strTVsOff, string p_strProjsOff, StringBuilder p_objProgress = null)
+        public actionStatus turnSystemOff(List<string> p_strTVsOff, List<string> p_strProjsOff, StringBuilder p_objProgress = null)
         {
 
             ////TODO Figure out how to power off TVs
@@ -834,7 +835,7 @@ namespace khVSAutomation
                 //TVs
                 foreach (var l_objTelevision in m_objTelevisions)
                 {
-                    if (isItemInList(l_objTelevision.TelevisionName, p_strTVsOff, '|'))
+                    if (isItemInList(l_objTelevision.TelevisionName, p_strTVsOff))
                     {
                         try
                         {
@@ -857,7 +858,7 @@ namespace khVSAutomation
                 //Projectors
                 foreach (var l_objProjector in m_objProjectors)
                 {
-                    if(isItemInList(l_objProjector.projectorName, p_strProjsOff, '|'))
+                    if(isItemInList(l_objProjector.projectorName, p_strProjsOff))
                     {
                         switch (l_objProjector.checkProjectorPowerStatus())
                         {

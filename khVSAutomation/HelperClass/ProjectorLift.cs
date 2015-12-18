@@ -83,7 +83,6 @@ namespace khVSAutomation
                         break;
                     default:
                         throw new Exception(string.Format("{0}: {1}: {2} Command NOT Found.", l_strFunctionName, LiftName, p_strCommandName));
-                        break;
                 }
                 m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, LiftName, l_strCallingFunctionName, p_strCommandName));
                 AsyncContext.Run(() => doLiftAction(l_objLiftAction));
