@@ -423,13 +423,13 @@ namespace khVSAutomation
                             p_objProgress.AppendLine("Waiting for projector to power on and warmup...");
                         
                         int l_intProjWarmUpTime = 0;
-                        while ((m_objProjectors[l_intIterator - 1].checkProjectorPowerStatus() != "ON") && (l_intProjWarmUpTime < 120000))
+                        while ((m_objProjectors[l_intIterator - 1].checkProjectorPowerStatus() != "ON") && (l_intProjWarmUpTime < 30000))
                         {
                             System.Threading.Thread.Sleep(750); // pause for 3/4 second;
                             l_intProjWarmUpTime += 750;
                             //Console.WriteLine("Current Projector Status: " + hallAutomations.getProjectorStatus());
 
-                            if (l_intProjWarmUpTime >= 120000)
+                            if (l_intProjWarmUpTime >= 30000)
                             {
                                 if (l_blnLoggingProgress) 
                                     p_objProgress.AppendLine("It's taking the projector #" + l_intIterator + " too long to Turn On/Warm Up. Moving on. Please check the projector settings");
@@ -582,98 +582,104 @@ namespace khVSAutomation
                 l_objLiftStatus = l_objTVStatus = l_objProjStatus = actionStatus.None;
 
                 //TVs
-                foreach (var l_objTelevision in m_objTelevisions)
+                if (p_strTVsOn.Count > 0)
                 {
-                    if(isItemInList(l_objTelevision.TelevisionName, p_strTVsOn))
+                    foreach (var l_objTelevision in m_objTelevisions)
                     {
-                        m_objLogger.logToMemory("Waking up TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
-                        DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.WakeupTV()));
-                        m_objLogger.logToMemory("Call to Wake up TV Completed", l_objTVStatus);
-                        if (l_objTVStatus != actionStatus.Error)
+                        if (isItemInList(l_objTelevision.TelevisionName, p_strTVsOn))
                         {
-                            DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.TelevisionRegistered == false ? actionStatus.PartialError : actionStatus.Success));
-                            m_objLogger.logToMemory("The TV Needs to be Registered before any other commands will work.", l_objTVStatus);
+                            m_objLogger.logToMemory("Waking up TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
+                            DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.WakeupTV()));
+                            m_objLogger.logToMemory("Call to Wake up TV Completed", l_objTVStatus);
+                            if (l_objTVStatus != actionStatus.Error)
+                            {
+                                DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.TelevisionRegistered == false ? actionStatus.PartialError : actionStatus.Success));
+                                m_objLogger.logToMemory("The TV Needs to be Registered before any other commands will work.", l_objTVStatus);
+                            }
                         }
-                    }
-                    else
-                    {
-                        l_objTVStatus = actionStatus.Error;
-                        if (l_blnLoggingProgress)
-                            p_objProgress.AppendLine("Television " + l_objTelevision.TelevisionName + " is not configured. Please check the configuration settings.");
+                        else
+                        {
+                            l_objTVStatus = actionStatus.Error;
+                            if (l_blnLoggingProgress)
+                                p_objProgress.AppendLine("Television " + l_objTelevision.TelevisionName + " is not configured. Please check the configuration settings.");
+                        }
                     }
                 }
 
                 //Projectors
-                foreach (var l_objProjector in m_objProjectors)
+                if (p_strProjsOn.Count > 0)
                 {
-                    if(isItemInList(l_objProjector.projectorName, p_strProjsOn))
+                    foreach (var l_objProjector in m_objProjectors)
                     {
-                        switch (l_objProjector.checkProjectorPowerStatus())
+                        if (isItemInList(l_objProjector.projectorName, p_strProjsOn))
                         {
-                            case "OFF":
-                            case "UNKNOWN":
-                                if (l_blnLoggingProgress)
-                                    p_objProgress.AppendLine("Lowering projector lift...");
-
-                                
-                                //Task.WaitAll(m_objProjectorLifts[l_intIterator - 1].doLiftAction(LiftAction.Extend));
-                                foreach (var l_objLift in m_objProjectorLifts)
-                                {
-                                    if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
-                                    {
-                                        AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
-                                        break;
-                                    }
-                                }
-                                DetermineOverallStatus(ref l_objProjStatus, (l_objProjector.turnOnProjector()));
-                                break;
-
-                            case "ON":
-                                //Even though the projector is already on, there may be cases where the projector lift was not extended before hand 
-                                //(e.g. Manual operations), so let's extend it now for good measure
-                                if (l_blnLoggingProgress)
-                                    p_objProgress.AppendLine("Projector: " + l_objProjector.projectorName + " was already on!..... Attempting to Extend Lift Now.");
-                                foreach (var l_objLift in m_objProjectorLifts)
-                                {
-                                    if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
-                                    {
-                                        AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
-                                        break;
-                                    }
-                                }
-                                DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
-
-                                break;
-                        }
-
-                        //Wait until projector is fully powered on
-                        if (l_blnLoggingProgress)
-                            p_objProgress.AppendLine("Waiting for projector to power on and warmup...");
-
-                        int l_intProjWarmUpTime = 0;
-                        while ((l_objProjector.checkProjectorPowerStatus() != "ON") && (l_intProjWarmUpTime < 120000))
-                        {
-                            System.Threading.Thread.Sleep(750); // pause for 3/4 second;
-                            l_intProjWarmUpTime += 750;
-                            //Console.WriteLine("Current Projector Status: " + hallAutomations.getProjectorStatus());
-
-                            if (l_intProjWarmUpTime >= 120000)
+                            switch (l_objProjector.checkProjectorPowerStatus())
                             {
-                                if (l_blnLoggingProgress)
-                                    p_objProgress.AppendLine("It's taking the projector #" + l_objProjector.projectorName + " too long to Turn On/Warm Up. Moving on. Please check the projector settings");
-                                DetermineOverallStatus(ref l_objProjStatus, actionStatus.PartialError);
-                            }
-                        }
+                                case "OFF":
+                                case "UNKNOWN":
+                                    if (l_blnLoggingProgress)
+                                        p_objProgress.AppendLine("Lowering projector lift...");
 
-                        if (l_blnLoggingProgress) p_objProgress.AppendLine("Pausing for 5 seconds, then changing the projectors input to HDMI...");
-                        System.Threading.Thread.Sleep(5000);
-                        l_objProjector.changeProjectorToHDMI();
-                        DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
-                    }
-                    else
-                    {
-                        l_objProjStatus = actionStatus.Error;
-                        p_objProgress.AppendLine("Projector " + l_objProjector.projectorName + " is not configured. Please check the configuration settings.");
+
+                                    //Task.WaitAll(m_objProjectorLifts[l_intIterator - 1].doLiftAction(LiftAction.Extend));
+                                    foreach (var l_objLift in m_objProjectorLifts)
+                                    {
+                                        if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
+                                        {
+                                            AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
+                                            break;
+                                        }
+                                    }
+                                    DetermineOverallStatus(ref l_objProjStatus, (l_objProjector.turnOnProjector()));
+                                    break;
+
+                                case "ON":
+                                    //Even though the projector is already on, there may be cases where the projector lift was not extended before hand 
+                                    //(e.g. Manual operations), so let's extend it now for good measure
+                                    if (l_blnLoggingProgress)
+                                        p_objProgress.AppendLine("Projector: " + l_objProjector.projectorName + " was already on!..... Attempting to Extend Lift Now.");
+                                    foreach (var l_objLift in m_objProjectorLifts)
+                                    {
+                                        if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
+                                        {
+                                            AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
+                                            break;
+                                        }
+                                    }
+                                    DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
+
+                                    break;
+                            }
+
+                            //Wait until projector is fully powered on
+                            if (l_blnLoggingProgress)
+                                p_objProgress.AppendLine("Waiting for projector to power on and warmup...");
+
+                            int l_intProjWarmUpTime = 0;
+                            while ((l_objProjector.checkProjectorPowerStatus() != "ON") && (l_intProjWarmUpTime < 30000))
+                            {
+                                System.Threading.Thread.Sleep(750); // pause for 3/4 second;
+                                l_intProjWarmUpTime += 750;
+                                //Console.WriteLine("Current Projector Status: " + hallAutomations.getProjectorStatus());
+
+                                if (l_intProjWarmUpTime >= 30000)
+                                {
+                                    if (l_blnLoggingProgress)
+                                        p_objProgress.AppendLine("It's taking the projector #" + l_objProjector.projectorName + " too long to Turn On/Warm Up. Moving on. Please check the projector settings");
+                                    DetermineOverallStatus(ref l_objProjStatus, actionStatus.PartialError);
+                                }
+                            }
+
+                            if (l_blnLoggingProgress) p_objProgress.AppendLine("Pausing for 5 seconds, then changing the projectors input to HDMI...");
+                            System.Threading.Thread.Sleep(5000);
+                            //l_objProjector.changeProjectorToHDMI();
+                            DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
+                        }
+                        else
+                        {
+                            l_objProjStatus = actionStatus.Error;
+                            p_objProgress.AppendLine("Projector " + l_objProjector.projectorName + " is not configured. Please check the configuration settings.");
+                        }
                     }
                 }
 
@@ -702,11 +708,6 @@ namespace khVSAutomation
 
         public actionStatus turnSystemOff(int p_intProjID = 1, int p_intLiftID = 1, int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
-            
-            ////TODO Figure out how to power off TVs
-            //Console.WriteLine("Powering off TV...");
-            ////Power off TV Here!
-
             //TODO: FIGURE OUT HOW TO POLL/TRACK WHAT IS ON SO THERE IS NO GUESSING
             var l_objOverallStatus = actionStatus.None;
             var l_strFunctionName = "turnSystemOff()";
@@ -762,13 +763,13 @@ namespace khVSAutomation
                                 //Wait until projector is fully powered off
                                 if (l_blnLoggingProgress) p_objProgress.AppendLine("Waiting for projector to power off and cooldown...");
                                 int l_intProjCoolDownTime = 0;
-                                while ((m_objProjectors[l_intIterator - 1].checkProjectorPowerStatus() != "UNKNOWN") && (l_intProjCoolDownTime < 120000))
+                                while ((m_objProjectors[l_intIterator - 1].checkProjectorPowerStatus() != "UNKNOWN") && (l_intProjCoolDownTime < 30000))
                                 {
                                     System.Threading.Thread.Sleep(750); // pause for 1/4 second;
                                     l_intProjCoolDownTime += 750;
                                     if (l_blnLoggingProgress) p_objProgress.AppendLine("Current Projector Status: " + m_objProjectors[l_intIterator - 1].getProjectorStatus());
 
-                                    if (l_intProjCoolDownTime >= 120000)
+                                    if (l_intProjCoolDownTime >= 30000)
                                     {
                                         if (l_blnLoggingProgress)
                                             p_objProgress.AppendLine("It's taking the projector #" + l_intIterator + " too long to Cool Down. Moving on. Please check the projector settings");
@@ -776,12 +777,15 @@ namespace khVSAutomation
                                     }
                                 }
 
-                                if (l_intProjCoolDownTime < 120000) DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
-
-                                if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");
-                                //TODO Make a function to use the logic of the projector class settings to find the proper lift by name instead of using the same iterator.
-                                AsyncContext.Run(() => m_objProjectorLifts[l_intIterator - 1].doLiftAction(LiftAction.Retract));
-                                if (l_blnLoggingProgress) p_objProgress.AppendLine("Completed Retracting projector lift...");
+                                if (l_intProjCoolDownTime < 30000)
+                                {
+                                    DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
+                                    if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");
+                                    //TODO Make a function to use the logic of the projector class settings to find the proper lift by name instead of using the same iterator.
+                                    AsyncContext.Run(() => m_objProjectorLifts[l_intIterator - 1].doLiftAction(LiftAction.Retract));
+                                    if (l_blnLoggingProgress) p_objProgress.AppendLine("Completed Retracting projector lift...");
+                                }
+                                else if (l_blnLoggingProgress) p_objProgress.AppendLine("The Projector did not cool down in time. Lift Retraction Cancelled for saftey reasons.");
                                 break;
                         }
                     }
@@ -884,13 +888,13 @@ namespace khVSAutomation
                                 //Wait until projector is fully powered off
                                 if (l_blnLoggingProgress) p_objProgress.AppendLine("Waiting for projector to power off and cooldown...");
                                 int l_intProjCoolDownTime = 0;
-                                while ((l_objProjector.checkProjectorPowerStatus() != "UNKNOWN") && (l_intProjCoolDownTime < 120000))
+                                while ((l_objProjector.checkProjectorPowerStatus() != "UNKNOWN") && (l_intProjCoolDownTime < 30000))
                                 {
                                     System.Threading.Thread.Sleep(750); // pause for 1/4 second;
                                     l_intProjCoolDownTime += 750;
                                     if (l_blnLoggingProgress) p_objProgress.AppendLine("Current Projector Status: " + l_objProjector.getProjectorStatus());
 
-                                    if (l_intProjCoolDownTime >= 120000)
+                                    if (l_intProjCoolDownTime >= 30000)
                                     {
                                         if (l_blnLoggingProgress)
                                             p_objProgress.AppendLine("It's taking the projector " + l_objProjector.projectorName + " too long to Cool Down. Moving on. Please check the projector settings");
@@ -898,19 +902,21 @@ namespace khVSAutomation
                                     }
                                 }
 
-                                if (l_intProjCoolDownTime < 120000) DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
-
-                                if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");
-                                
-                                foreach (var l_objLift in m_objProjectorLifts)
+                                if (l_intProjCoolDownTime < 30000)
                                 {
-                                    if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
+                                    DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
+                                    if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");
+                                    foreach (var l_objLift in m_objProjectorLifts)
                                     {
-                                        AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Retract));
-                                        break;
+                                        if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
+                                        {
+                                            AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Retract));
+                                            break;
+                                        }
                                     }
+                                    if (l_blnLoggingProgress) p_objProgress.AppendLine("Completed Retracting projector lift...");
                                 }
-                                if (l_blnLoggingProgress) p_objProgress.AppendLine("Completed Retracting projector lift...");
+                                else if (l_blnLoggingProgress) p_objProgress.AppendLine("The Projector did not cool down in time. Lift Retraction Cancelled for saftey reasons.");
                                 break;
                         }
                     }
@@ -1226,7 +1232,7 @@ namespace khVSAutomation
             return l_objStatus;
         }
 
-        public actionStatus SendMatrixCommandByValue(string p_strSelectedLift, string p_strCommand, string p_strDevice, string p_strSource)
+        public actionStatus SendMatrixCommandByValue(string p_strSelectedLift, string p_strDevice, string p_strSource, string p_strCommand = "3")
         {
             var l_strFunctionName = "SendMatrixCommandByValue()";
             var l_objStatus = actionStatus.None;

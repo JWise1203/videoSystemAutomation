@@ -43,6 +43,7 @@
             this.btnStart_All_Off = new System.Windows.Forms.Button();
             this.btnStart_All_On = new System.Windows.Forms.Button();
             this.gbStart_BackRooms = new System.Windows.Forms.GroupBox();
+            this.chkStart_BR_IncOffice = new System.Windows.Forms.CheckBox();
             this.btnStart_BR_TV_Source = new System.Windows.Forms.Button();
             this.btnStart_BR_TV_Off = new System.Windows.Forms.Button();
             this.btnStart_BR_TV_On = new System.Windows.Forms.Button();
@@ -138,7 +139,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.tbFeedback = new System.Windows.Forms.TabPage();
             this.label2 = new System.Windows.Forms.Label();
-            this.chkStart_BR_IncOffice = new System.Windows.Forms.CheckBox();
+            this.chkStart_MA_TV_SourceAudio = new System.Windows.Forms.CheckBox();
             lblRegistrationStatus = new System.Windows.Forms.Label();
             lblProjectorStatus = new System.Windows.Forms.Label();
             lblLiftStatus = new System.Windows.Forms.Label();
@@ -243,7 +244,7 @@
             this.gbStart_All.Controls.Add(this.label24);
             this.gbStart_All.Controls.Add(this.btnStart_All_Off);
             this.gbStart_All.Controls.Add(this.btnStart_All_On);
-            this.gbStart_All.Location = new System.Drawing.Point(7, 358);
+            this.gbStart_All.Location = new System.Drawing.Point(7, 381);
             this.gbStart_All.Name = "gbStart_All";
             this.gbStart_All.Size = new System.Drawing.Size(666, 78);
             this.gbStart_All.TabIndex = 2;
@@ -310,12 +311,23 @@
             this.gbStart_BackRooms.Controls.Add(this.ddlStart_BR_TV_Source);
             this.gbStart_BackRooms.Controls.Add(this.label22);
             this.gbStart_BackRooms.Controls.Add(this.label23);
-            this.gbStart_BackRooms.Location = new System.Drawing.Point(7, 239);
+            this.gbStart_BackRooms.Location = new System.Drawing.Point(7, 262);
             this.gbStart_BackRooms.Name = "gbStart_BackRooms";
             this.gbStart_BackRooms.Size = new System.Drawing.Size(666, 113);
             this.gbStart_BackRooms.TabIndex = 1;
             this.gbStart_BackRooms.TabStop = false;
             this.gbStart_BackRooms.Text = "Back Rooms";
+            // 
+            // chkStart_BR_IncOffice
+            // 
+            this.chkStart_BR_IncOffice.AutoSize = true;
+            this.chkStart_BR_IncOffice.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkStart_BR_IncOffice.Location = new System.Drawing.Point(127, 32);
+            this.chkStart_BR_IncOffice.Name = "chkStart_BR_IncOffice";
+            this.chkStart_BR_IncOffice.Size = new System.Drawing.Size(109, 17);
+            this.chkStart_BR_IncOffice.TabIndex = 17;
+            this.chkStart_BR_IncOffice.Text = "Include Office TV";
+            this.chkStart_BR_IncOffice.UseVisualStyleBackColor = true;
             // 
             // btnStart_BR_TV_Source
             // 
@@ -380,6 +392,7 @@
             // 
             // gbStart_MainAuditorium
             // 
+            this.gbStart_MainAuditorium.Controls.Add(this.chkStart_MA_TV_SourceAudio);
             this.gbStart_MainAuditorium.Controls.Add(this.btnStart_MA_TV_Source);
             this.gbStart_MainAuditorium.Controls.Add(this.btnStart_MA_Proj_Off);
             this.gbStart_MainAuditorium.Controls.Add(this.btnStart_MA_Proj_On);
@@ -394,7 +407,7 @@
             this.gbStart_MainAuditorium.Controls.Add(this.label17);
             this.gbStart_MainAuditorium.Location = new System.Drawing.Point(7, 82);
             this.gbStart_MainAuditorium.Name = "gbStart_MainAuditorium";
-            this.gbStart_MainAuditorium.Size = new System.Drawing.Size(666, 151);
+            this.gbStart_MainAuditorium.Size = new System.Drawing.Size(666, 165);
             this.gbStart_MainAuditorium.TabIndex = 0;
             this.gbStart_MainAuditorium.TabStop = false;
             this.gbStart_MainAuditorium.Text = "Main Auditorium";
@@ -402,7 +415,7 @@
             // btnStart_MA_TV_Source
             // 
             this.btnStart_MA_TV_Source.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStart_MA_TV_Source.Location = new System.Drawing.Point(234, 96);
+            this.btnStart_MA_TV_Source.Location = new System.Drawing.Point(234, 105);
             this.btnStart_MA_TV_Source.Name = "btnStart_MA_TV_Source";
             this.btnStart_MA_TV_Source.Size = new System.Drawing.Size(73, 40);
             this.btnStart_MA_TV_Source.TabIndex = 10;
@@ -412,7 +425,7 @@
             // 
             // btnStart_MA_Proj_Off
             // 
-            this.btnStart_MA_Proj_Off.Location = new System.Drawing.Point(482, 56);
+            this.btnStart_MA_Proj_Off.Location = new System.Drawing.Point(482, 65);
             this.btnStart_MA_Proj_Off.Name = "btnStart_MA_Proj_Off";
             this.btnStart_MA_Proj_Off.Size = new System.Drawing.Size(75, 29);
             this.btnStart_MA_Proj_Off.TabIndex = 9;
@@ -422,7 +435,7 @@
             // 
             // btnStart_MA_Proj_On
             // 
-            this.btnStart_MA_Proj_On.Location = new System.Drawing.Point(379, 56);
+            this.btnStart_MA_Proj_On.Location = new System.Drawing.Point(379, 65);
             this.btnStart_MA_Proj_On.Name = "btnStart_MA_Proj_On";
             this.btnStart_MA_Proj_On.Size = new System.Drawing.Size(75, 29);
             this.btnStart_MA_Proj_On.TabIndex = 8;
@@ -433,7 +446,7 @@
             // btnStart_MA_Proj_Source
             // 
             this.btnStart_MA_Proj_Source.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStart_MA_Proj_Source.Location = new System.Drawing.Point(584, 96);
+            this.btnStart_MA_Proj_Source.Location = new System.Drawing.Point(584, 105);
             this.btnStart_MA_Proj_Source.Name = "btnStart_MA_Proj_Source";
             this.btnStart_MA_Proj_Source.Size = new System.Drawing.Size(73, 40);
             this.btnStart_MA_Proj_Source.TabIndex = 7;
@@ -445,7 +458,7 @@
             // 
             this.ddlStart_MA_Proj_Source.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ddlStart_MA_Proj_Source.FormattingEnabled = true;
-            this.ddlStart_MA_Proj_Source.Location = new System.Drawing.Point(379, 106);
+            this.ddlStart_MA_Proj_Source.Location = new System.Drawing.Point(379, 115);
             this.ddlStart_MA_Proj_Source.Name = "ddlStart_MA_Proj_Source";
             this.ddlStart_MA_Proj_Source.Size = new System.Drawing.Size(199, 23);
             this.ddlStart_MA_Proj_Source.TabIndex = 6;
@@ -455,7 +468,7 @@
             // 
             this.label21.AutoSize = true;
             this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label21.Location = new System.Drawing.Point(376, 88);
+            this.label21.Location = new System.Drawing.Point(376, 97);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(46, 15);
             this.label21.TabIndex = 5;
@@ -463,7 +476,7 @@
             // 
             // btnStart_MA_TV_Off
             // 
-            this.btnStart_MA_TV_Off.Location = new System.Drawing.Point(132, 56);
+            this.btnStart_MA_TV_Off.Location = new System.Drawing.Point(132, 65);
             this.btnStart_MA_TV_Off.Name = "btnStart_MA_TV_Off";
             this.btnStart_MA_TV_Off.Size = new System.Drawing.Size(75, 29);
             this.btnStart_MA_TV_Off.TabIndex = 4;
@@ -473,7 +486,7 @@
             // 
             // btnStart_MA_TV_On
             // 
-            this.btnStart_MA_TV_On.Location = new System.Drawing.Point(29, 56);
+            this.btnStart_MA_TV_On.Location = new System.Drawing.Point(29, 65);
             this.btnStart_MA_TV_On.Name = "btnStart_MA_TV_On";
             this.btnStart_MA_TV_On.Size = new System.Drawing.Size(75, 29);
             this.btnStart_MA_TV_On.TabIndex = 3;
@@ -485,7 +498,7 @@
             // 
             this.ddlStart_MA_TV_Source.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ddlStart_MA_TV_Source.FormattingEnabled = true;
-            this.ddlStart_MA_TV_Source.Location = new System.Drawing.Point(29, 106);
+            this.ddlStart_MA_TV_Source.Location = new System.Drawing.Point(29, 115);
             this.ddlStart_MA_TV_Source.Name = "ddlStart_MA_TV_Source";
             this.ddlStart_MA_TV_Source.Size = new System.Drawing.Size(199, 23);
             this.ddlStart_MA_TV_Source.TabIndex = 1;
@@ -495,7 +508,7 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(26, 88);
+            this.label16.Location = new System.Drawing.Point(26, 97);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(46, 15);
             this.label16.TabIndex = 0;
@@ -1363,16 +1376,16 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "COMING SOON!";
             // 
-            // chkStart_BR_IncOffice
+            // chkStart_MA_TV_SourceAudio
             // 
-            this.chkStart_BR_IncOffice.AutoSize = true;
-            this.chkStart_BR_IncOffice.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkStart_BR_IncOffice.Location = new System.Drawing.Point(127, 33);
-            this.chkStart_BR_IncOffice.Name = "chkStart_BR_IncOffice";
-            this.chkStart_BR_IncOffice.Size = new System.Drawing.Size(109, 17);
-            this.chkStart_BR_IncOffice.TabIndex = 17;
-            this.chkStart_BR_IncOffice.Text = "Include Office TV";
-            this.chkStart_BR_IncOffice.UseVisualStyleBackColor = true;
+            this.chkStart_MA_TV_SourceAudio.AutoSize = true;
+            this.chkStart_MA_TV_SourceAudio.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.chkStart_MA_TV_SourceAudio.Location = new System.Drawing.Point(127, 37);
+            this.chkStart_MA_TV_SourceAudio.Name = "chkStart_MA_TV_SourceAudio";
+            this.chkStart_MA_TV_SourceAudio.Size = new System.Drawing.Size(128, 17);
+            this.chkStart_MA_TV_SourceAudio.TabIndex = 11;
+            this.chkStart_MA_TV_SourceAudio.Text = "Include Audio Source";
+            this.chkStart_MA_TV_SourceAudio.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -1381,8 +1394,10 @@
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(718, 525);
             this.Controls.Add(this.tabControl1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Kingdom Hall Automations";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);
             this.tbStart.ResumeLayout(false);
             this.gbStart_All.ResumeLayout(false);
@@ -1534,6 +1549,7 @@
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.CheckBox chkStart_BR_IncOffice;
+        private System.Windows.Forms.CheckBox chkStart_MA_TV_SourceAudio;
     }
 }
 
