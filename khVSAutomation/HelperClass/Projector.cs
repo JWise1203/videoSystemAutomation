@@ -220,6 +220,11 @@ namespace khVSAutomation
              return change_Input(InputCommand.InputType.DIGITAL, 1, "HDMI");
          }
 
+         public actionStatus changeProjectorToBlank()
+         {
+             return change_Input(InputCommand.InputType.UNKNOWN, 1, "BLANK");
+         }
+
          public actionStatus changeProjectorToVGA()
          {
              return change_Input(InputCommand.InputType.RGB, 1, "VGA");
@@ -247,6 +252,7 @@ namespace khVSAutomation
              l_lstrCommands.Add("Power Off");
              l_lstrCommands.Add("HDMI");
              l_lstrCommands.Add("VGA");
+             //l_lstrCommands.Add("BLANK"); 
              return l_lstrCommands;
          }
 
@@ -273,6 +279,11 @@ namespace khVSAutomation
                          m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, projectorName, "changeProjectorToVGA()", p_strCommandName));
                          l_objStatus = changeProjectorToVGA();
                          m_objLogger.logToMemory(string.Format("{0}: {1}: {2} completed with a status of : {3}.", l_strFunctionName, projectorName, "changeProjectorToVGA()", l_objStatus), l_objStatus);
+                         break;
+                     case "BLANK":
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, projectorName, "changeProjectorToBlank()", p_strCommandName));
+                         l_objStatus = changeProjectorToBlank();
+                         m_objLogger.logToMemory(string.Format("{0}: {1}: {2} completed with a status of : {3}.", l_strFunctionName, projectorName, "changeProjectorToBlank()", l_objStatus), l_objStatus);
                          break;
                      case "Power On":
                          m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to call {2} based on receiving the following command name: {3}.", l_strFunctionName, projectorName, "turnOnProjector()", p_strCommandName));
