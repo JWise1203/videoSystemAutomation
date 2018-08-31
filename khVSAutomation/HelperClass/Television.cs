@@ -66,7 +66,7 @@ namespace khVSAutomation
 
             //Check this televisions Registration
             m_objLogger.logToMemory(string.Format("{0}: {1}: New Television Object Created. Calling CheckReg() to Check the Registration.....", "New Television()", TelevisionName));
-            var l_objStatus = checkReg();
+            var l_objStatus = checkReg(true);
             m_objLogger.logToMemory(string.Format("{0}: {1}: Registration Check Completed with a status of {2}", "New Television()", "New Television()", TelevisionName, l_objStatus.ToString()), l_objStatus);
 
             m_objTVCommandWhiteList = (from comm in myDB.tblTVCommandWhiteLists
@@ -724,7 +724,7 @@ namespace khVSAutomation
         //Logger Template
         //m_objLogger.logToMemory(string.Format("{0}: ", l_strFunctionName));
 
-        private actionStatus checkReg()
+        private actionStatus checkReg(bool blnLoading = false)
         {
             var l_strFunctionName = "checkReg()";
             var l_objStatus = actionStatus.None;
@@ -742,53 +742,80 @@ namespace khVSAutomation
                 {
                     //Let's check the registration status
                     List<SonyCookie> bal = JsonConvert.DeserializeObject<List<SonyCookie>>(m_strCookieData);
-                    DateTime CT = DateTime.Now;
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Checking if Cookie has Expired. The Expiration Date on hand is: {2}, and the Current Date and Time is: {3}.", l_strFunctionName, TelevisionName, bal[0].Expires, CT.ToString()));
+                    m_objLogger.logToMemory(string.Format("{0}: {1}: Checking if the stored Cookie has Expired.", l_strFunctionName, TelevisionName));
+                    var lblnTryForce = bal.Count < 1;
 
-                    if (CT > Convert.ToDateTime(bal[0].Expires))
+                    if (lblnTryForce)
                     {
-                        m_objLogger.logToMemory(string.Format("{0}: {1}: The Cookie has Expired! Attempting to Retrieve a NEW Cookie.", l_strFunctionName, TelevisionName));
-
-                        m_strJSONToSend = "{\"id\":13,\"method\":\"actRegister\",\"version\":\"1.0\",\"params\":[{\"clientid\":\"" + m_strHostName + ":34c43339-af3d-40e7-b1b2-743331375368c\",\"nickname\":\"" + m_strHostName + "\"},[{\"clientid\":\"" + m_strHostName + ":34c43339-af3d-40e7-b1b2-743331375368c\",\"value\":\"yes\",\"nickname\":\"" + m_strHostName + "\",\"function\":\"WOL\"}]]}";
-                        try
-                        {
-                            var httpWebRequest2 = (HttpWebRequest)WebRequest.Create(@"http://" + TelevisionIPAddress + @"/sony/accessControl");
-                            httpWebRequest2.ContentType = "application/json";
-                            httpWebRequest2.Method = "POST";
-                            httpWebRequest2.AllowAutoRedirect = true;
-                            httpWebRequest2.CookieContainer = allcookies;
-                            httpWebRequest2.Timeout = 500;
-                            using (var streamWriter = new StreamWriter(httpWebRequest2.GetRequestStream()))
-                            {
-                                m_objLogger.logToMemory(string.Format("{0}: {1}: Sending the following request to retrieve a new cookie: {2}.", l_strFunctionName, TelevisionName, m_strJSONToSend));
-                                streamWriter.Write(m_strJSONToSend);
-                            }
-                            var httpResponse = (HttpWebResponse)httpWebRequest2.GetResponse();
-                            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                            {
-                                var l_strResponseText = streamReader.ReadToEnd();
-                                m_objLogger.logToMemory(string.Format("{0}: {1}: Received the following response: {2}.", l_strFunctionName, TelevisionName, l_strResponseText));
-                            }
-                            updateCookieData(l_strFunctionName, httpWebRequest2);
-                            TelevisionRegistered = true;
-                            l_objStatus = actionStatus.Success;
-                        }
-                        catch (Exception e)
-                        {
-                            l_objStatus = actionStatus.Error;
-                            m_objLogger.logToMemory(string.Format("{0}: {1}: Failed to retrieve a new cookie. Error returned: {2}", l_strFunctionName, TelevisionName, e.ToString()), l_objStatus);
-                            TelevisionRegistered = false;
-                        }
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: Cannot check the expiration date as the cookiedata was empty. Going to try to force registration.", l_strFunctionName, TelevisionName));
                     }
                     else
                     {
-                        m_objLogger.logToMemory(string.Format("{0}: {1}: The Stored Cookie is still good.", l_strFunctionName, TelevisionName));
-                        m_objLogger.logToMemory(string.Format("{0}: {1}: Adding Cookie to the Device.", l_strFunctionName, TelevisionName));
-                        //_Log.writetolog(bal[0].Name + ": Adding Cookie to Device: " + bal[0].Value, false);
-                        allcookies.Add(new Uri(@"http://" + TelevisionIPAddress + bal[0].Path), new Cookie(bal[0].Name, bal[0].Value));
-                        TelevisionRegistered = true;
-                        l_objStatus = actionStatus.Success;
+                        DateTime CT = DateTime.Now;
+                        m_objLogger.logToMemory(string.Format("{0}: {1}: The Expiration Date on hand is: {2}, and the Current Date and Time is: {3}.", l_strFunctionName, TelevisionName, bal[0].Expires, CT.ToString()));
+
+                        if (CT > Convert.ToDateTime(bal[0].Expires))
+                        {
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: The Cookie has Expired! Attempting to Retrieve a NEW Cookie.", l_strFunctionName, TelevisionName));
+
+                            m_strJSONToSend = "{\"id\":13,\"method\":\"actRegister\",\"version\":\"1.0\",\"params\":[{\"clientid\":\"" + m_strHostName + ":34c43339-af3d-40e7-b1b2-743331375368c\",\"nickname\":\"" + m_strHostName + "\"},[{\"clientid\":\"" + m_strHostName + ":34c43339-af3d-40e7-b1b2-743331375368c\",\"value\":\"yes\",\"nickname\":\"" + m_strHostName + "\",\"function\":\"WOL\"}]]}";
+                            try
+                            {
+                                var httpWebRequest2 = (HttpWebRequest)WebRequest.Create(@"http://" + TelevisionIPAddress + @"/sony/accessControl");
+                                httpWebRequest2.ContentType = "application/json";
+                                httpWebRequest2.Method = "POST";
+                                httpWebRequest2.AllowAutoRedirect = true;
+                                httpWebRequest2.CookieContainer = allcookies;
+                                httpWebRequest2.Timeout = 500;
+                                using (var streamWriter = new StreamWriter(httpWebRequest2.GetRequestStream()))
+                                {
+                                    m_objLogger.logToMemory(string.Format("{0}: {1}: Sending the following request to retrieve a new cookie: {2}.", l_strFunctionName, TelevisionName, m_strJSONToSend));
+                                    streamWriter.Write(m_strJSONToSend);
+                                }
+                                var httpResponse = (HttpWebResponse)httpWebRequest2.GetResponse();
+                                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                                {
+                                    var l_strResponseText = streamReader.ReadToEnd();
+                                    m_objLogger.logToMemory(string.Format("{0}: {1}: Received the following response: {2}.", l_strFunctionName, TelevisionName, l_strResponseText));
+                                }
+                                updateCookieData(l_strFunctionName, httpWebRequest2);
+                                TelevisionRegistered = true;
+                                l_objStatus = actionStatus.Success;
+                            }
+                            catch (Exception e)
+                            {
+                                lblnTryForce = true;
+                                m_objLogger.logToMemory(string.Format("{0}: {1}: Failed to retrieve a new cookie. Error returned: {2} trying to force registration", l_strFunctionName, TelevisionName, e.ToString()), actionStatus.Error);
+                            }
+                        }
+                        else
+                        {
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: The Stored Cookie is still good.", l_strFunctionName, TelevisionName));
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: Adding Cookie to the Device.", l_strFunctionName, TelevisionName));
+                            //_Log.writetolog(bal[0].Name + ": Adding Cookie to Device: " + bal[0].Value, false);
+                            allcookies.Add(new Uri(@"http://" + TelevisionIPAddress + bal[0].Path), new Cookie(bal[0].Name, bal[0].Value));
+                            TelevisionRegistered = true;
+                            l_objStatus = actionStatus.Success;
+                        }
                     }
+                    
+                    if (lblnTryForce)
+                    {
+                        try
+                        {
+                            var blnRegistered = false;
+                            registerTV_Step2("1234", ref blnRegistered);
+                            TelevisionRegistered = blnRegistered;
+                            l_objStatus = actionStatus.Success;
+                        }
+                        catch (Exception e2)
+                        {
+                            l_objStatus = actionStatus.Error;
+                            m_objLogger.logToMemory(string.Format("{0}: {1}: Failed to retrieve a new cookie. Error returned: {2}", l_strFunctionName, TelevisionName, e2.ToString()), l_objStatus);
+                            TelevisionRegistered = false;
+                        }
+                    }
+                    
                 }
 
                 //Load the commands that we already have available

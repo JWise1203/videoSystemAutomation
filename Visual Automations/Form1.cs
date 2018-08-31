@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Configuration;
@@ -15,6 +16,7 @@ using System.Net.Sockets;
 using System.IO;
 using Newtonsoft.Json;
 using khVSAutomation;
+using SplashScreen;
 
 using rv;
 
@@ -25,20 +27,59 @@ namespace Visual_Automations
         private static readonly Dictionary<string,string> SwitcherSource = new Dictionary<string,string>() { { "Computer", "1" }, { "Stage HDMI", "2" }, { "Apple TV", "3" }, { "Roku", "4" } };
         private static readonly Dictionary<string, string> SwitcherDevice = new Dictionary<string, string>() { { "Projector", "1" }, { "Library TV", "2" }, { "Office TV", "3" }, { "Auditorium TVs", "4" } };
         private static Automation hallAutomations = null;
+        static Thread ms_oThread = null;
+        private static Boolean m_blnFrmLoading = false;
+
+        private enum OFFOn
+        {
+            Off = 0,
+            On = 1
+        }
+
+        private enum SourceChange
+        {
+            None = 0,
+            AuditoriumTV = 1,
+            AuditoriumProjector = 2,
+            BackRoomTV = 3,
+            All = 99
+        }
+
+        private enum PowerChange
+        {
+            None = 0,
+            On = 1,
+            Off = 2,
+        }
 
         public Form1()
         {
             InitializeComponent();
 
+            SplashScreen.SplashScreen.ShowSplashScreen();
+            Application.DoEvents();
+            SplashScreen.SplashScreen.SetStatus("Loading Automation Assemblies and checking DB.");
+            System.Threading.Thread.Sleep(100);
             //Set the LogLevel To All For Testing Purposes - We can back it down later
             hallAutomations = new Automation(false, logLevel.All);
 
-            //tabControl1.SelectedIndexChanged += new EventHandler(tabControl1_SelectedIndexChanged);
+            //Wire up the tab control event handler
             tabControl1.Selecting += new TabControlCancelEventHandler(tabControl1_Selecting);
 
-            ConfigureStartUp(true);
+            SplashScreen.SplashScreen.SetStatus("Setting Controls for Startup");
+            System.Threading.Thread.Sleep(100);
+            ConfigureBasic(true);
+            //RF Changed to Basic 8/13/2016
+            //ConfigureStartUp(true);
             //DisplayMainUserInterface();
+
+            SplashScreen.SplashScreen.SetStatus("Complete");
+            System.Threading.Thread.Sleep(100);
+
+            SplashScreen.SplashScreen.CloseForm();
         }
+
+        #region shared functions and events
 
         void tabControl1_Selecting(object sender, TabControlCancelEventArgs e)
         {
@@ -46,7 +87,11 @@ namespace Visual_Automations
             //validate the current page, to cancel the select use:
             switch (current.Name)
             {
-                case "tbStart":
+                case "tbBasic":
+                    ConfigureBasic();
+                    break;
+                case "tbAdvanced":
+                    //Startup is decieving - but the Startup commands were created when this used to be the first tab displayed
                     ConfigureStartUp();
                     break;
                 case "tbQuick":
@@ -73,6 +118,93 @@ namespace Visual_Automations
             }
         }
 
+        private void LoadMatrixSourceDropDowns()
+        {
+            var l_selectedTab = tabControl1.SelectedTab.Name;
+            var l_objTempDDLItems = new string[SwitcherSource.Keys.Count];
+            SwitcherSource.Keys.CopyTo(l_objTempDDLItems, 0);
+            string l_strTempSource = "";
+
+            switch (l_selectedTab)
+            {
+                case "tbBasic":
+                    l_strTempSource = ddlBasic_TV_Source.SelectedIndex > -1 ? ddlBasic_TV_Source.SelectedItem.ToString() : "";
+                    ddlBasic_TV_Source.Items.Clear();
+                    ddlBasic_TV_Source.Items.AddRange(l_objTempDDLItems);
+                    if (l_strTempSource.Length > 0)
+                    {
+                        try { ddlBasic_TV_Source.SelectedItem = l_strTempSource; }
+                        catch { ddlBasic_TV_Source.SelectedIndex = -1; }
+                    }
+                    if (ddlBasic_TV_Source.SelectedIndex == -1)
+                    {
+                        try { ddlBasic_TV_Source.SelectedItem = "Computer"; }
+                        catch { ddlBasic_TV_Source.SelectedIndex = -1; }
+                    }
+                    break;
+
+
+                case "tbAdvanced":        
+                    l_strTempSource = ddlStart_All_Source.SelectedIndex > -1 ? ddlStart_All_Source.SelectedItem.ToString() : "";
+                    ddlStart_All_Source.Items.Clear();
+                    ddlStart_All_Source.Items.AddRange(l_objTempDDLItems);
+                    if (l_strTempSource.Length > 0)
+                    {
+                        try { ddlStart_All_Source.SelectedItem = l_strTempSource; }
+                        catch { ddlStart_All_Source.SelectedIndex = -1; }
+                    }
+                    if (ddlStart_All_Source.SelectedIndex == -1)
+                    {
+                        try { ddlStart_All_Source.SelectedItem = "Computer"; }
+                        catch { ddlStart_All_Source.SelectedIndex = -1; }
+                    }
+
+
+                    l_strTempSource = ddlStart_BR_TV_Source.SelectedIndex > -1 ? ddlStart_BR_TV_Source.SelectedItem.ToString() : "";
+                    ddlStart_BR_TV_Source.Items.Clear();
+                    ddlStart_BR_TV_Source.Items.AddRange(l_objTempDDLItems);
+                    if (l_strTempSource.Length > 0)
+                    {
+                        try { ddlStart_BR_TV_Source.SelectedItem = l_strTempSource; }
+                        catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
+                    }
+                    if (ddlStart_BR_TV_Source.SelectedIndex == -1)
+                    {
+                        try { ddlStart_BR_TV_Source.SelectedItem = "Computer"; }
+                        catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
+                    }
+
+                    l_strTempSource = ddlStart_MA_Proj_Source.SelectedIndex > -1 ? ddlStart_MA_Proj_Source.SelectedItem.ToString() : "";
+                    ddlStart_MA_Proj_Source.Items.Clear();
+                    ddlStart_MA_Proj_Source.Items.AddRange(l_objTempDDLItems);
+                    if (l_strTempSource.Length > 0)
+                    {
+                        try { ddlStart_MA_Proj_Source.SelectedItem = l_strTempSource; }
+                        catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
+                    }
+                    if (ddlStart_MA_Proj_Source.SelectedIndex == -1)
+                    {
+                        try { ddlStart_MA_Proj_Source.SelectedItem = "Computer"; }
+                        catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
+                    }
+
+                    l_strTempSource = ddlStart_MA_TV_Source.SelectedIndex > -1 ? ddlStart_MA_TV_Source.SelectedItem.ToString() : "";
+                    ddlStart_MA_TV_Source.Items.Clear();
+                    ddlStart_MA_TV_Source.Items.AddRange(l_objTempDDLItems);
+                    if (l_strTempSource.Length > 0)
+                    {
+                        try { ddlStart_MA_TV_Source.SelectedItem = l_strTempSource; }
+                        catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
+                    }
+                    if (ddlStart_MA_TV_Source.SelectedIndex == -1)
+                    {
+                        try { ddlStart_MA_TV_Source.SelectedItem = "Computer"; }
+                        catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
+                    }
+                    break;
+            }
+        }
+
         private void ConfigureErrorsTab()
         {
             //throw new NotImplementedException();
@@ -83,68 +215,91 @@ namespace Visual_Automations
             //throw new NotImplementedException();
         }
 
-        #region Start Tab Stuff
+        #endregion
+
+        #region Basic Start Stuff
+        private void ConfigureBasic(bool p_blnFirstLoad = false)
+        {
+            m_blnFrmLoading = true;
+            //Not Needed for Basic
+            //chkStart_MA_TV_SourceAudio.Checked = p_blnFirstLoad ? p_blnFirstLoad : chkStart_MA_TV_SourceAudio.Checked;
+            LoadMatrixSourceDropDowns();
+            m_blnFrmLoading = false;
+        }
+
+        private void btnBasic_TV_On_Click(object sender, EventArgs e) { basicTV_ONOFF(OFFOn.On); }
+        private void btnBasic_TV_Off_Click(object sender, EventArgs e) { basicTV_ONOFF(OFFOn.Off); }
+        private void basicTV_ONOFF(OFFOn p_enOffOn)
+        {
+            SplashScreen.SplashScreen.ShowSplashScreen();
+            Application.DoEvents();
+            SplashScreen.SplashScreen.SetStatus(string.Format("Turning TV's {0}", (p_enOffOn == OFFOn.On ? "On" : "Off")));
+            System.Threading.Thread.Sleep(100);
+            var l_strTVNames = new List<string>();
+            var l_objProgress = new StringBuilder();
+            foreach (var strTV in hallAutomations.AllTelevisions)
+            {
+                var l_strTempName = strTV.Split(';')[0];
+                //For Basic Operations for now we are leaving out the Office TV.
+                if (!l_strTempName.Contains("Office")) { l_strTVNames.Add(l_strTempName); }
+            }
+            SplashScreen.SplashScreen.SetStatus("Sending Command to TVs");
+            System.Threading.Thread.Sleep(100);
+            if (l_strTVNames.Count > 0)
+            {
+                if (p_enOffOn == OFFOn.Off)
+                {
+                    hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
+                }
+                else
+                {
+                    hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
+                    basicSourceChange();
+                }                                
+            }
+            SplashScreen.SplashScreen.SetStatus("Complete");
+            System.Threading.Thread.Sleep(100);
+            SplashScreen.SplashScreen.CloseForm();
+        }
+
+        private void ddlBasic_TV_Source_SelectedIndexChanged(object sender, EventArgs e) { basicSourceChange(true); }
+        private void basicSourceChange(bool p_blnFromDDL = false)
+        {
+            if (ddlBasic_TV_Source.SelectedIndex > -1 && !m_blnFrmLoading)
+            {
+                if (p_blnFromDDL)
+                {
+                    SplashScreen.SplashScreen.ShowSplashScreen();
+                    Application.DoEvents();
+                }
+                SplashScreen.SplashScreen.SetStatus("Switching TV and Audio Source.");
+                System.Threading.Thread.Sleep(100);
+
+                //TODO: There has to be a better way
+                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], SwitcherSource[ddlBasic_TV_Source.SelectedItem.ToString()]);
+                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Auditorium TVs"], SwitcherSource[ddlBasic_TV_Source.SelectedItem.ToString()]);
+                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Library TV"], SwitcherSource[ddlBasic_TV_Source.SelectedItem.ToString()]);
+
+                SplashScreen.SplashScreen.SetStatus("Done Source Switch");
+                System.Threading.Thread.Sleep(100);
+
+                if (p_blnFromDDL) { SplashScreen.SplashScreen.CloseForm(); }
+            }
+        }
+
+        #endregion
+ 
+
+        #region Advanced Tab Stuff
         private void ConfigureStartUp(bool p_blnFirstLoad = false)
         {
-            chkStart_MA_TV_SourceAudio.Checked = p_blnFirstLoad;
+            chkStart_MA_TV_SourceAudio.Checked = p_blnFirstLoad ? p_blnFirstLoad : chkStart_MA_TV_SourceAudio.Checked;
             LoadMatrixSourceDropDowns();
         }
 
-        private void LoadMatrixSourceDropDowns()
-        {
-            var l_objTempDDLItems = new string[SwitcherSource.Keys.Count];
-            SwitcherSource.Keys.CopyTo(l_objTempDDLItems, 0);
-            var l_strTempSource = ddlStart_All_Source.SelectedIndex > -1 ? ddlStart_All_Source.SelectedItem.ToString() : "";
-            ddlStart_All_Source.Items.Clear();
-            ddlStart_All_Source.Items.AddRange(l_objTempDDLItems);
-            if (l_strTempSource.Length > 0)
-            {
-                try { ddlStart_All_Source.SelectedItem = l_strTempSource; } catch { ddlStart_All_Source.SelectedIndex = -1; }
-            }
-            if (ddlStart_All_Source.SelectedIndex == -1)
-            {
-                try { ddlStart_All_Source.SelectedItem = "Computer"; } catch { ddlStart_All_Source.SelectedIndex = -1; }
-            }
-                        
-
-            l_strTempSource = ddlStart_BR_TV_Source.SelectedIndex > -1 ? ddlStart_BR_TV_Source.SelectedItem.ToString() : "";
-            ddlStart_BR_TV_Source.Items.Clear();
-            ddlStart_BR_TV_Source.Items.AddRange(l_objTempDDLItems);
-            if (l_strTempSource.Length > 0)
-            {
-                try { ddlStart_BR_TV_Source.SelectedItem = l_strTempSource; } catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
-            }
-            if (ddlStart_BR_TV_Source.SelectedIndex == -1)
-            {
-                try { ddlStart_BR_TV_Source.SelectedItem = "Computer"; } catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
-            }
-
-            l_strTempSource = ddlStart_MA_Proj_Source.SelectedIndex > -1 ? ddlStart_MA_Proj_Source.SelectedItem.ToString() : "";
-            ddlStart_MA_Proj_Source.Items.Clear();
-            ddlStart_MA_Proj_Source.Items.AddRange(l_objTempDDLItems);
-            if (l_strTempSource.Length > 0)
-            {
-                try { ddlStart_MA_Proj_Source.SelectedItem = l_strTempSource; } catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
-            }
-            if (ddlStart_MA_Proj_Source.SelectedIndex == -1)
-            {
-                try { ddlStart_MA_Proj_Source.SelectedItem = "Computer"; } catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
-            }
-            
-            l_strTempSource = ddlStart_MA_TV_Source.SelectedIndex > -1 ? ddlStart_MA_TV_Source.SelectedItem.ToString() : "";
-            ddlStart_MA_TV_Source.Items.Clear();
-            ddlStart_MA_TV_Source.Items.AddRange(l_objTempDDLItems);
-            if (l_strTempSource.Length > 0)
-            {
-                try { ddlStart_MA_TV_Source.SelectedItem = l_strTempSource; } catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
-            }
-            if (ddlStart_MA_TV_Source.SelectedIndex == -1)
-            {
-                try { ddlStart_MA_TV_Source.SelectedItem = "Roku"; } catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
-            }
-        }
-
-        private void btnStart_MA_TV_On_Click(object sender, EventArgs e)
+        private void btnStart_MA_TV_On_Click(object sender, EventArgs e) { advancedTV_Auditorium_ONOFF(OFFOn.On); }
+        private void btnStart_MA_TV_Off_Click(object sender, EventArgs e) { advancedTV_Auditorium_ONOFF(OFFOn.Off); }
+        private void advancedTV_Auditorium_ONOFF(OFFOn p_enOffOn)
         {
             var l_strTVNames = new List<string>();
             var l_objProgress = new StringBuilder();
@@ -159,27 +314,18 @@ namespace Visual_Automations
 
             if (l_strTVNames.Count > 0)
             {
-                hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
-                //Switch the Source
-                if (ddlStart_MA_TV_Source.SelectedIndex > -1)
-                    hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Auditorium TVs"], SwitcherSource[ddlStart_MA_TV_Source.SelectedItem.ToString()]);
-            }
-        }
-
-        private void btnStart_MA_TV_Off_Click(object sender, EventArgs e)
-        {
-            var l_strTVNames = new List<string>();
-            var l_objProgress = new StringBuilder();
-            foreach (var strTV in hallAutomations.AllTelevisions)
-            {
-                var l_strTVName = strTV.Split(';')[0];
-                if (l_strTVName.Contains("Auditorium"))
+                if (p_enOffOn == OFFOn.Off)
                 {
-                    l_strTVNames.Add(l_strTVName);
+                    hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
+                }
+                else
+                {
+                    hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
+                    //Switch the Source
+                    if (ddlStart_MA_TV_Source.SelectedIndex > -1)
+                        hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Auditorium TVs"], SwitcherSource[ddlStart_MA_TV_Source.SelectedItem.ToString()]);
                 }
             }
-            if (l_strTVNames.Count > 0)
-                hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
         }
 
         //not needed at this time
@@ -199,22 +345,25 @@ namespace Visual_Automations
             }
         }
 
-        private void btnStart_MA_Proj_On_Click(object sender, EventArgs e)
+        private void btnStart_MA_Proj_On_Click(object sender, EventArgs e) { advancedProj_ONOFF(OFFOn.On); }
+        private void btnStart_MA_Proj_Off_Click(object sender, EventArgs e) { advancedProj_ONOFF(OFFOn.Off); }
+        private void advancedProj_ONOFF(OFFOn p_enOffOn)
         {
             var l_strProjNames = new List<string>();
             foreach (var strProj in hallAutomations.AllProjectors) l_strProjNames.Add(strProj.Split(';')[0]);
             var l_objProgress = new StringBuilder();
-            var l_objStatus = hallAutomations.turnSystemOn(new List<string>(), l_strProjNames, l_objProgress);
-            if (ddlStart_MA_TV_Source.SelectedIndex > -1)
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], SwitcherSource[ddlStart_MA_Proj_Source.SelectedItem.ToString()]);
-        }
-
-        private void btnStart_MA_Proj_Off_Click(object sender, EventArgs e)
-        {
-            var l_strProjNames = new List<string>();
-            foreach (var strProj in hallAutomations.AllProjectors) l_strProjNames.Add(strProj.Split(';')[0]);
-            var l_objProgress = new StringBuilder();
-            var l_objStatus = hallAutomations.turnSystemOff(new List<string>(), l_strProjNames, l_objProgress);
+            if (p_enOffOn == OFFOn.Off)
+            {
+                var l_objStatus = hallAutomations.turnSystemOff(new List<string>(), l_strProjNames, l_objProgress);
+            }
+            else
+            {
+                var l_objStatus = hallAutomations.turnSystemOn(new List<string>(), l_strProjNames, l_objProgress);
+                if (ddlStart_MA_TV_Source.SelectedIndex > -1)
+                {
+                    hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], SwitcherSource[ddlStart_MA_Proj_Source.SelectedItem.ToString()]);
+                }                
+            }
         }
 
         private void ddlStart_MA_Proj_Source_SelectedIndexChanged(object sender, EventArgs e)
@@ -293,8 +442,37 @@ namespace Visual_Automations
             foreach (var strProj in hallAutomations.AllProjectors) l_strProjNames.Add(strProj.Split(';')[0]);
             var l_objProgress = new StringBuilder();
             hallAutomations.turnSystemOn(l_strTVNames, l_strProjNames, l_objProgress);
-
             changeAllSources();
+
+
+            //using (var pleaseWait = new PleaseWait(DoChanges(l_strTVNames, l_strProjNames, PowerChange.On, SourceChange.All);))
+            //   pleaseWait.ShowDialog(this);
+        }
+
+        private void DoChanges(List<string> p_strTV, List<string> p_strProj, PowerChange p_objPChange = PowerChange.None, SourceChange p_objSourceChange = SourceChange.None)
+        {
+            var l_sbOldLog = new StringBuilder();
+            switch (p_objPChange)
+            {
+                case PowerChange.On :
+                    hallAutomations.turnSystemOn(p_strTV, p_strProj, l_sbOldLog);
+                    break;
+                case PowerChange.Off :
+                    hallAutomations.turnSystemOff(p_strTV, p_strProj, l_sbOldLog);
+                    break;
+            }
+            switch (p_objSourceChange)
+            {
+                case SourceChange.All :
+                    changeAllSources();
+                    break;
+                case SourceChange.AuditoriumTV:
+                    break;
+                case SourceChange.AuditoriumProjector:
+                    break;
+                case SourceChange.BackRoomTV:
+                    break;
+            }
         }
 
         private void changeAllSources()
@@ -1002,6 +1180,11 @@ namespace Visual_Automations
 
         }
         */
+        #endregion
+
+        #region SplashScreen - Operations
+        
+
         #endregion
     }
 }
