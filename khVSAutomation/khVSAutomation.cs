@@ -763,13 +763,15 @@ namespace khVSAutomation
                                 //Wait until projector is fully powered off
                                 if (l_blnLoggingProgress) p_objProgress.AppendLine("Waiting for projector to power off and cooldown...");
                                 int l_intProjCoolDownTime = 0;
-                                while ((m_objProjectors[l_intIterator - 1].checkProjectorPowerStatus() != "UNKNOWN") && (l_intProjCoolDownTime < 30000))
+                                while ((m_objProjectors[l_intIterator - 1].checkProjectorPowerStatus() != "UNKNOWN" &&
+                                           m_objProjectors[l_intIterator - 1].checkProjectorPowerStatus() != "OFF") || 
+                                           (l_intProjCoolDownTime < 45000))
                                 {
-                                    System.Threading.Thread.Sleep(750); // pause for 1/4 second;
-                                    l_intProjCoolDownTime += 750;
+                                    System.Threading.Thread.Sleep(1000); // pause for 1/4 second;
+                                    l_intProjCoolDownTime += 1000;
                                     if (l_blnLoggingProgress) p_objProgress.AppendLine("Current Projector Status: " + m_objProjectors[l_intIterator - 1].getProjectorStatus());
 
-                                    if (l_intProjCoolDownTime >= 30000)
+                                    if (l_intProjCoolDownTime >= 90000)
                                     {
                                         if (l_blnLoggingProgress)
                                             p_objProgress.AppendLine("It's taking the projector #" + l_intIterator + " too long to Cool Down. Moving on. Please check the projector settings");
@@ -777,7 +779,7 @@ namespace khVSAutomation
                                     }
                                 }
 
-                                if (l_intProjCoolDownTime < 30000)
+                                if (l_intProjCoolDownTime < 90000)
                                 {
                                     DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
                                     if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");
@@ -888,13 +890,15 @@ namespace khVSAutomation
                                 //Wait until projector is fully powered off
                                 if (l_blnLoggingProgress) p_objProgress.AppendLine("Waiting for projector to power off and cooldown...");
                                 int l_intProjCoolDownTime = 0;
-                                while ((l_objProjector.checkProjectorPowerStatus() != "UNKNOWN") && (l_intProjCoolDownTime < 30000))
+                                while ((l_objProjector.checkProjectorPowerStatus() != "UNKNOWN" &&
+                                        l_objProjector.checkProjectorPowerStatus() != "OFF") || 
+                                        (l_intProjCoolDownTime < 45000))
                                 {
-                                    System.Threading.Thread.Sleep(750); // pause for 1/4 second;
-                                    l_intProjCoolDownTime += 750;
+                                    System.Threading.Thread.Sleep(1000); // pause for 1/4 second;
+                                    l_intProjCoolDownTime += 1000;
                                     if (l_blnLoggingProgress) p_objProgress.AppendLine("Current Projector Status: " + l_objProjector.getProjectorStatus());
 
-                                    if (l_intProjCoolDownTime >= 30000)
+                                    if (l_intProjCoolDownTime >= 90000)
                                     {
                                         if (l_blnLoggingProgress)
                                             p_objProgress.AppendLine("It's taking the projector " + l_objProjector.projectorName + " too long to Cool Down. Moving on. Please check the projector settings");
@@ -902,7 +906,7 @@ namespace khVSAutomation
                                     }
                                 }
 
-                                if (l_intProjCoolDownTime < 30000)
+                                if (l_intProjCoolDownTime < 90000)
                                 {
                                     DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
                                     if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");

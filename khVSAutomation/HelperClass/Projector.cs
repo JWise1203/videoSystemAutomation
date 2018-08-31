@@ -102,6 +102,7 @@ namespace khVSAutomation
              var l_strFunctionName = "printProjectorStatus()";
              try
              {
+                 if (m_objProjectorConnection == null) connectToProjector(); //Connect now if not connected
                  p_objProgress.AppendLine("Attempting to Print the Projector Status");
 
                  LampStatusCommand l_objLamp = new LampStatusCommand();
@@ -141,10 +142,10 @@ namespace khVSAutomation
 
              try
              {
-                 connectToProjector();
+                 if (m_objProjectorConnection == null) connectToProjector(); //Connect now if not connected
                  m_objLogger.logToMemory(string.Format("{0}: {1}: Turning Projector On", l_strFunctionName, projectorName));
                  m_objProjectorConnection.turnOn();
-                 m_objLogger.logToMemory(string.Format("{0}: {1}: Projector is now: {2]", l_strFunctionName, projectorName, m_objProjectorConnection.powerQuery().ToString()));
+                 m_objLogger.logToMemory(string.Format("{0}: {1}: Projector is now: {2}", l_strFunctionName, projectorName, m_objProjectorConnection.powerQuery().ToString()));
                  l_objStatus = actionStatus.Success;
              }
              catch (Exception e)
@@ -166,7 +167,7 @@ namespace khVSAutomation
              m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to turn the Projector Off......", l_strFunctionName, projectorName));
              try
              {
-                 connectToProjector();
+                 if (m_objProjectorConnection == null) connectToProjector(); //Connect now if not connected
 
                  //TODO:create a message bus so that these messages can be displayed real time
                  m_objLogger.logToMemory(string.Format("{0}: {1}: Turning Projector Off", l_strFunctionName, projectorName));
@@ -191,6 +192,7 @@ namespace khVSAutomation
 
              try
              {
+                 if (m_objProjectorConnection == null) connectToProjector(); //Connect now if not connected
                  m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Change the Projector Input to {2}", l_strFunctionName, projectorName, p_strInputName));
 
                  InputCommand l_objInputCommand = new InputCommand(p_objInputType, p_intPort);
