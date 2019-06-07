@@ -54,29 +54,36 @@ namespace Visual_Automations
 
         public Form1()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
 
-            SplashScreen.SplashScreen.ShowSplashScreen();
-            Application.DoEvents();
-            SplashScreen.SplashScreen.SetStatus("Loading Automation Assemblies and checking DB.");
-            System.Threading.Thread.Sleep(100);
-            //Set the LogLevel To All For Testing Purposes - We can back it down later
-            hallAutomations = new Automation(false, logLevel.All);
+                SplashScreen.SplashScreen.ShowSplashScreen();
+                Application.DoEvents();
+                SplashScreen.SplashScreen.SetStatus("Loading Automation Assemblies and checking DB.");
+                System.Threading.Thread.Sleep(100);
+                //Set the LogLevel To All For Testing Purposes - We can back it down later
+                hallAutomations = new Automation(false, logLevel.All);
 
-            //Wire up the tab control event handler
-            tabControl1.Selecting += new TabControlCancelEventHandler(tabControl1_Selecting);
+                //Wire up the tab control event handler
+                tabControl1.Selecting += new TabControlCancelEventHandler(tabControl1_Selecting);
 
-            SplashScreen.SplashScreen.SetStatus("Setting Controls for Startup");
-            System.Threading.Thread.Sleep(100);
-            ConfigureBasic(true);
-            //RF Changed to Basic 8/13/2016
-            //ConfigureStartUp(true);
-            //DisplayMainUserInterface();
+                SplashScreen.SplashScreen.SetStatus("Setting Controls for Startup");
+                System.Threading.Thread.Sleep(100);
+                ConfigureBasic(true);
+                //RF Changed to Basic 8/13/2016
+                //ConfigureStartUp(true);
+                //DisplayMainUserInterface();
 
-            SplashScreen.SplashScreen.SetStatus("Complete");
-            System.Threading.Thread.Sleep(100);
+                SplashScreen.SplashScreen.SetStatus("Complete");
+                System.Threading.Thread.Sleep(100);
 
-            SplashScreen.SplashScreen.CloseForm();
+                SplashScreen.SplashScreen.CloseForm();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("An Exception: " + e.ToString());
+            }
         }
 
         #region shared functions and events
