@@ -16,15 +16,12 @@ using khVSAutomation;
 
 using rv;
 
-//using hallAutomations = khVSAutomation.Automation;
-
 namespace videoSystemAutomationApp
 {
     class Program
     {
         static DateTime StartTime;
 
-        //private static PJLinkConnection c = null;
         private static Automation hallAutomations = null;
 
         static void Main(string[] args)
@@ -46,8 +43,6 @@ namespace videoSystemAutomationApp
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
             StringDictionary OperationStringList = new StringDictionary();
-            //Convert.ToDateTime(bal[0].Expires
-            //1447377013662-0500
 
             OperationStringList.Add("A", "Turn on system");
             OperationStringList.Add("B", "Turn off system");
@@ -55,9 +50,7 @@ namespace videoSystemAutomationApp
             OperationStringList.Add("D", "Power On TV");
             OperationStringList.Add("E", "In Progress - Power Off TV");
             OperationStringList.Add("F", "Register App with TV");
-            //OperationStringList.Add("G", "Register App with TV (Automatic)"); --This did not work as expected
             OperationStringList.Add("H", "Send Command");
-            OperationStringList.Add("X", "Switch Matrix Source");
             OperationStringList.Add("Y", "Check Current Settings");
             OperationStringList.Add("Z", "Exit application");
 
@@ -177,32 +170,6 @@ namespace videoSystemAutomationApp
                         
                         RunAnotherOperation();
                         break;
-                    //Auto Registration did not work during testing.
-                    //case "G":
-                    //    //TODO: might have to split this function up to get it working in the khAutomations dll
-                    //    List<string> l_strAvailTVs2 = hallAutomations.getAvailableDeviceInfo(DeviceTypes.Television);
-
-                    //    //What Television do we need to register?
-                    //    if (l_strAvailTVs2.Count > 0)
-                    //    {
-                    //        foreach (string l_strTVInfo in l_strAvailTVs2)
-                    //        {
-                    //            string[] l_astrTVInfo = l_strTVInfo.Split('|');
-                    //            Console.WriteLine("Enter {0} for {1}", l_astrTVInfo[0], l_astrTVInfo[1]);
-                    //        }
-                    //        Console.WriteLine("");
-                    //        int iTVID = Int32.Parse(Console.ReadLine());
-
-
-                    //        StringBuilder l_objProgress = new StringBuilder();
-
-                    //        var l_objStatus = hallAutomations.RegisterTV1Step(iTVID, l_objProgress);
-                    //        Console.Write(l_objProgress.ToString());
-                    //    }
-                    //    else Console.WriteLine("Registration Cancelled - There are currently no Televisions setup in the configuration file.");
-
-                    //    RunAnotherOperation();
-                    //    break;
                     case "H":
                         List<string> l_strAvailTVs3 = hallAutomations.getAvailableDeviceInfo(DeviceTypes.Television);
 
@@ -235,27 +202,6 @@ namespace videoSystemAutomationApp
                                 Console.Write(hallAutomations.PowerOffTV(i));
                             }
                         }
-                        RunAnotherOperation();
-                        break;
-                    case "X" :
-                        var l_intOutput = -1;
-                        do
-                        {
-                            Console.Write("Please select an Output # (1-4): ");
-                            try { l_intOutput = int.Parse(Console.ReadLine()); }
-                            catch { l_intOutput = -1; }
-                        } while (l_intOutput < 1 || l_intOutput > 4);
-
-                        var l_intSource = -1;
-                        do
-                        {
-                            Console.Write("Please select a Source # (1-4): ");
-                            try { l_intSource = int.Parse(Console.ReadLine()); }
-                            catch { l_intSource = -1; }
-                        } while (l_intSource < 1 || l_intSource > 4);
-
-                        switchMatrixSource((SwitcherOutput)l_intOutput, (SwitcherAction)l_intSource);
-
                         RunAnotherOperation();
                         break;
                     case "Y" :
@@ -323,11 +269,6 @@ namespace videoSystemAutomationApp
                         Console.WriteLine("Sending Authentication PIN Code. ");
 
                         l_objStatus = hallAutomations.registerTV_Part2(l_strPIN, iTVID, l_objProgress);
-
-                        //This was my attempt at doing this all within one step without user action - It did not work.
-                        //Console.WriteLine("I'm Going to Try 1914 instead");
-                        //l_objStatus = hallAutomations.registerTV_Part2("1914", iTVID, l_objProgress);
-                        //l_objStatus = hallAutomations.RegisterTV1Step(iTVID, l_objProgress);
                         Console.Write(l_objProgress.ToString());
                     }
                     else
@@ -378,29 +319,6 @@ namespace videoSystemAutomationApp
                     Console.WriteLine("Something went wrong. Please check the logs for more details.\nIf this issue persists, please contact the system administrator");
                     break;
             }
-        }
-
-        private static void switchMatrixSource(SwitcherOutput p_objOutput, SwitcherAction p_objSource)
-        {
-            StringBuilder l_objProgress = new StringBuilder();
-            Console.WriteLine("Attempting to Switch Source");
-            if (hallAutomations.NumberOfSwitchers > 0)
-            {
-                var l_objStatus = hallAutomations.changeMatrixSource(1, p_objOutput, p_objSource, l_objProgress);
-                Console.Write(l_objProgress.ToString());
-
-                switch (l_objStatus)
-                {
-                    case actionStatus.Success:
-                        Console.WriteLine("The Source has been successfully Been Switched.");
-                        break;
-                    default:
-                        Console.WriteLine("Something went wrong. Please check the logs for more details.\nIf this issue persists, please contact the system administrator");
-                        break;
-                }
-            }
-            else
-                Console.WriteLine("Action Cannot be Performed: There are No Matrix Switchers Configured!");         
         }
     }
 }

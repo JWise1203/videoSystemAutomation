@@ -24,11 +24,7 @@ namespace Visual_Automations
 {
     public partial class Form1 : Form
     {
-        private static readonly Dictionary<string,string> SwitcherSource = new Dictionary<string,string>() { { "Computer", "1" }, { "Stage HDMI", "2" }, { "Apple TV", "3" }, { "Roku", "4" } };
-        private static readonly Dictionary<string, string> SwitcherDevice = new Dictionary<string, string>() { { "Projector", "1" }, { "Library TV", "2" }, { "Office TV", "3" }, { "Auditorium TVs", "4" } };
         private static Automation hallAutomations = null;
-        static Thread ms_oThread = null;
-        private static Boolean m_blnFrmLoading = false;
 
         private enum OFFOn
         {
@@ -70,10 +66,6 @@ namespace Visual_Automations
 
                 SplashScreen.SplashScreen.SetStatus("Setting Controls for Startup");
                 System.Threading.Thread.Sleep(100);
-                ConfigureBasic(true);
-                //RF Changed to Basic 8/13/2016
-                //ConfigureStartUp(true);
-                //DisplayMainUserInterface();
 
                 SplashScreen.SplashScreen.SetStatus("Complete");
                 System.Threading.Thread.Sleep(100);
@@ -95,11 +87,9 @@ namespace Visual_Automations
             switch (current.Name)
             {
                 case "tbBasic":
-                    ConfigureBasic();
                     break;
                 case "tbAdvanced":
                     //Startup is decieving - but the Startup commands were created when this used to be the first tab displayed
-                    ConfigureStartUp();
                     break;
                 case "tbQuick":
                     ConfigureQuickTab();
@@ -113,101 +103,11 @@ namespace Visual_Automations
                 case "tbLifts":
                     ConfigureProjectorLiftTab();
                     break;
-                case "tbMatrix":
-                    ConfigureMatrixTab();
-                    break;
                 case "tbFeedBack":
                     ConfigureFeedbackTab();
                     break;
                 case "tbErrors":
                     ConfigureErrorsTab();
-                    break;
-            }
-        }
-
-        private void LoadMatrixSourceDropDowns()
-        {
-            var l_selectedTab = tabControl1.SelectedTab.Name;
-            var l_objTempDDLItems = new string[SwitcherSource.Keys.Count];
-            SwitcherSource.Keys.CopyTo(l_objTempDDLItems, 0);
-            string l_strTempSource = "";
-
-            switch (l_selectedTab)
-            {
-                case "tbBasic":
-                    l_strTempSource = ddlBasic_TV_Source.SelectedIndex > -1 ? ddlBasic_TV_Source.SelectedItem.ToString() : "";
-                    ddlBasic_TV_Source.Items.Clear();
-                    ddlBasic_TV_Source.Items.AddRange(l_objTempDDLItems);
-                    if (l_strTempSource.Length > 0)
-                    {
-                        try { ddlBasic_TV_Source.SelectedItem = l_strTempSource; }
-                        catch { ddlBasic_TV_Source.SelectedIndex = -1; }
-                    }
-                    if (ddlBasic_TV_Source.SelectedIndex == -1)
-                    {
-                        try { ddlBasic_TV_Source.SelectedItem = "Computer"; }
-                        catch { ddlBasic_TV_Source.SelectedIndex = -1; }
-                    }
-                    break;
-
-
-                case "tbAdvanced":        
-                    l_strTempSource = ddlStart_All_Source.SelectedIndex > -1 ? ddlStart_All_Source.SelectedItem.ToString() : "";
-                    ddlStart_All_Source.Items.Clear();
-                    ddlStart_All_Source.Items.AddRange(l_objTempDDLItems);
-                    if (l_strTempSource.Length > 0)
-                    {
-                        try { ddlStart_All_Source.SelectedItem = l_strTempSource; }
-                        catch { ddlStart_All_Source.SelectedIndex = -1; }
-                    }
-                    if (ddlStart_All_Source.SelectedIndex == -1)
-                    {
-                        try { ddlStart_All_Source.SelectedItem = "Computer"; }
-                        catch { ddlStart_All_Source.SelectedIndex = -1; }
-                    }
-
-
-                    l_strTempSource = ddlStart_BR_TV_Source.SelectedIndex > -1 ? ddlStart_BR_TV_Source.SelectedItem.ToString() : "";
-                    ddlStart_BR_TV_Source.Items.Clear();
-                    ddlStart_BR_TV_Source.Items.AddRange(l_objTempDDLItems);
-                    if (l_strTempSource.Length > 0)
-                    {
-                        try { ddlStart_BR_TV_Source.SelectedItem = l_strTempSource; }
-                        catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
-                    }
-                    if (ddlStart_BR_TV_Source.SelectedIndex == -1)
-                    {
-                        try { ddlStart_BR_TV_Source.SelectedItem = "Computer"; }
-                        catch { ddlStart_BR_TV_Source.SelectedIndex = -1; }
-                    }
-
-                    l_strTempSource = ddlStart_MA_Proj_Source.SelectedIndex > -1 ? ddlStart_MA_Proj_Source.SelectedItem.ToString() : "";
-                    ddlStart_MA_Proj_Source.Items.Clear();
-                    ddlStart_MA_Proj_Source.Items.AddRange(l_objTempDDLItems);
-                    if (l_strTempSource.Length > 0)
-                    {
-                        try { ddlStart_MA_Proj_Source.SelectedItem = l_strTempSource; }
-                        catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
-                    }
-                    if (ddlStart_MA_Proj_Source.SelectedIndex == -1)
-                    {
-                        try { ddlStart_MA_Proj_Source.SelectedItem = "Computer"; }
-                        catch { ddlStart_MA_Proj_Source.SelectedIndex = -1; }
-                    }
-
-                    l_strTempSource = ddlStart_MA_TV_Source.SelectedIndex > -1 ? ddlStart_MA_TV_Source.SelectedItem.ToString() : "";
-                    ddlStart_MA_TV_Source.Items.Clear();
-                    ddlStart_MA_TV_Source.Items.AddRange(l_objTempDDLItems);
-                    if (l_strTempSource.Length > 0)
-                    {
-                        try { ddlStart_MA_TV_Source.SelectedItem = l_strTempSource; }
-                        catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
-                    }
-                    if (ddlStart_MA_TV_Source.SelectedIndex == -1)
-                    {
-                        try { ddlStart_MA_TV_Source.SelectedItem = "Computer"; }
-                        catch { ddlStart_MA_TV_Source.SelectedIndex = -1; }
-                    }
                     break;
             }
         }
@@ -225,14 +125,6 @@ namespace Visual_Automations
         #endregion
 
         #region Basic Start Stuff
-        private void ConfigureBasic(bool p_blnFirstLoad = false)
-        {
-            m_blnFrmLoading = true;
-            //Not Needed for Basic
-            //chkStart_MA_TV_SourceAudio.Checked = p_blnFirstLoad ? p_blnFirstLoad : chkStart_MA_TV_SourceAudio.Checked;
-            LoadMatrixSourceDropDowns();
-            m_blnFrmLoading = false;
-        }
 
         private void btnBasic_TV_On_Click(object sender, EventArgs e) { basicTV_ONOFF(OFFOn.On); }
         private void btnBasic_TV_Off_Click(object sender, EventArgs e) { basicTV_ONOFF(OFFOn.Off); }
@@ -244,65 +136,25 @@ namespace Visual_Automations
             System.Threading.Thread.Sleep(100);
             var l_strTVNames = new List<string>();
             var l_objProgress = new StringBuilder();
-            foreach (var strTV in hallAutomations.AllTelevisions)
-            {
-                var l_strTempName = strTV.Split(';')[0];
-                //For Basic Operations for now we are leaving out the Office TV.
-                if (!l_strTempName.Contains("Office")) { l_strTVNames.Add(l_strTempName); }
-            }
+			hallAutomations.AllTelevisions.ForEach(strTV => { var l_strTempName = strTV.Split(';')[0]; if (!l_strTempName.Contains("Office")) l_strTVNames.Add(l_strTempName); });
             SplashScreen.SplashScreen.SetStatus("Sending Command to TVs");
             System.Threading.Thread.Sleep(100);
             if (l_strTVNames.Count > 0)
             {
                 if (p_enOffOn == OFFOn.Off)
-                {
                     hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
-                }
                 else
-                {
                     hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
-                    basicSourceChange();
-                }                                
             }
             SplashScreen.SplashScreen.SetStatus("Complete");
             System.Threading.Thread.Sleep(100);
             SplashScreen.SplashScreen.CloseForm();
         }
 
-        private void ddlBasic_TV_Source_SelectedIndexChanged(object sender, EventArgs e) { basicSourceChange(true); }
-        private void basicSourceChange(bool p_blnFromDDL = false)
-        {
-            if (ddlBasic_TV_Source.SelectedIndex > -1 && !m_blnFrmLoading)
-            {
-                if (p_blnFromDDL)
-                {
-                    SplashScreen.SplashScreen.ShowSplashScreen();
-                    Application.DoEvents();
-                }
-                SplashScreen.SplashScreen.SetStatus("Switching TV and Audio Source.");
-                System.Threading.Thread.Sleep(100);
-
-                //TODO: There has to be a better way
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], SwitcherSource[ddlBasic_TV_Source.SelectedItem.ToString()]);
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Auditorium TVs"], SwitcherSource[ddlBasic_TV_Source.SelectedItem.ToString()]);
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Library TV"], SwitcherSource[ddlBasic_TV_Source.SelectedItem.ToString()]);
-
-                SplashScreen.SplashScreen.SetStatus("Done Source Switch");
-                System.Threading.Thread.Sleep(100);
-
-                if (p_blnFromDDL) { SplashScreen.SplashScreen.CloseForm(); }
-            }
-        }
-
         #endregion
  
 
         #region Advanced Tab Stuff
-        private void ConfigureStartUp(bool p_blnFirstLoad = false)
-        {
-            chkStart_MA_TV_SourceAudio.Checked = p_blnFirstLoad ? p_blnFirstLoad : chkStart_MA_TV_SourceAudio.Checked;
-            LoadMatrixSourceDropDowns();
-        }
 
         private void btnStart_MA_TV_On_Click(object sender, EventArgs e) { advancedTV_Auditorium_ONOFF(OFFOn.On); }
         private void btnStart_MA_TV_Off_Click(object sender, EventArgs e) { advancedTV_Auditorium_ONOFF(OFFOn.Off); }
@@ -322,33 +174,9 @@ namespace Visual_Automations
             if (l_strTVNames.Count > 0)
             {
                 if (p_enOffOn == OFFOn.Off)
-                {
                     hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
-                }
                 else
-                {
                     hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
-                    //Switch the Source
-                    if (ddlStart_MA_TV_Source.SelectedIndex > -1)
-                        hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Auditorium TVs"], SwitcherSource[ddlStart_MA_TV_Source.SelectedItem.ToString()]);
-                }
-            }
-        }
-
-        //not needed at this time
-        private void ddlStart_MA_TV_Source_SelectedIndexChanged(object sender, EventArgs e) { }
-
-        private void btnStart_MA_TV_Source_Click(object sender, EventArgs e)
-        {
-            if (ddlStart_MA_TV_Source.SelectedIndex > -1)
-            {
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Auditorium TVs"], SwitcherSource[ddlStart_MA_TV_Source.SelectedItem.ToString()]);
-
-                if (chkStart_MA_TV_SourceAudio.Checked) //Switch the Projector Source so that the Audio can play on the TVs.
-                {
-                    ddlStart_MA_Proj_Source.SelectedIndex = ddlStart_MA_TV_Source.SelectedIndex;
-                    hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], SwitcherSource[ddlStart_MA_TV_Source.SelectedItem.ToString()]);
-                }
             }
         }
 
@@ -357,145 +185,56 @@ namespace Visual_Automations
         private void advancedProj_ONOFF(OFFOn p_enOffOn)
         {
             var l_strProjNames = new List<string>();
-            foreach (var strProj in hallAutomations.AllProjectors) l_strProjNames.Add(strProj.Split(';')[0]);
+			hallAutomations.AllProjectors.ForEach(strProj => l_strProjNames.Add(strProj.Split(';')[0]));
             var l_objProgress = new StringBuilder();
             if (p_enOffOn == OFFOn.Off)
-            {
-                var l_objStatus = hallAutomations.turnSystemOff(new List<string>(), l_strProjNames, l_objProgress);
-            }
+                hallAutomations.turnSystemOff(new List<string>(), l_strProjNames, l_objProgress);
             else
-            {
-                var l_objStatus = hallAutomations.turnSystemOn(new List<string>(), l_strProjNames, l_objProgress);
-                if (ddlStart_MA_TV_Source.SelectedIndex > -1)
-                {
-                    hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], SwitcherSource[ddlStart_MA_Proj_Source.SelectedItem.ToString()]);
-                }                
-            }
-        }
-
-        private void ddlStart_MA_Proj_Source_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //Not Needed at this time
-        }
-
-        private void btnStart_MA_Proj_Source_Click(object sender, EventArgs e)
-        {
-            if (ddlStart_MA_Proj_Source.SelectedIndex > -1)
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], SwitcherSource[ddlStart_MA_Proj_Source.SelectedItem.ToString()]);
+                hallAutomations.turnSystemOn(new List<string>(), l_strProjNames, l_objProgress);
         }
 
         private void btnStart_BR_TV_On_Click(object sender, EventArgs e)
         {
             var l_strTVNames = new List<string>();
             var l_objProgress = new StringBuilder();
-            foreach (var strTV in hallAutomations.AllTelevisions)
-            {
-                var l_strTempName = strTV.Split(';')[0];
-                if (!l_strTempName.Contains("Auditorium"))
-                {
-                    if (l_strTempName.Contains("Office")) { if (chkStart_BR_IncOffice.Checked) l_strTVNames.Add(l_strTempName); }
-                    else l_strTVNames.Add(l_strTempName);
-                }
-            }
+			hallAutomations.AllTelevisions.ForEach(strTV =>
+			{
+				var l_strTempName = strTV.Split(';')[0];
+				if (!l_strTempName.Contains("Auditorium"))
+				{
+					if (l_strTempName.Contains("Office")) { if (chkStart_BR_IncOffice.Checked) l_strTVNames.Add(l_strTempName); }
+					else l_strTVNames.Add(l_strTempName);
+				}
+			});
             if (l_strTVNames.Count > 0)
-            {
                 hallAutomations.turnSystemOn(l_strTVNames, new List<string>(), l_objProgress);
-                changeBRTVSource();
-            }
-        }
-
-        private void changeBRTVSource()
-        {
-            if (ddlStart_BR_TV_Source.SelectedIndex > -1)
-            {
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Library TV"], SwitcherSource[ddlStart_BR_TV_Source.SelectedItem.ToString()]);
-                if (chkStart_BR_IncOffice.Checked)
-                    hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Office TV"], SwitcherSource[ddlStart_BR_TV_Source.SelectedItem.ToString()]);
-            }
         }
 
         private void btnStart_BR_TV_Off_Click(object sender, EventArgs e)
         {
             var l_strTVNames = new List<string>();
             var l_objProgress = new StringBuilder();
-            foreach (var strTV in hallAutomations.AllTelevisions)
-            {
-                var l_strTempName = strTV.Split(';')[0];
-                if (!l_strTempName.Contains("Auditorium"))
-                {
-                    if (l_strTempName.Contains("Office")) { if (chkStart_BR_IncOffice.Checked) l_strTVNames.Add(l_strTempName); }
-                    else l_strTVNames.Add(l_strTempName);
-                }
-            }
+			hallAutomations.AllTelevisions.ForEach(strTV =>
+			{
+				var l_strTempName = strTV.Split(';')[0];
+				if (!l_strTempName.Contains("Auditorium"))
+				{
+					if (l_strTempName.Contains("Office")) { if (chkStart_BR_IncOffice.Checked) l_strTVNames.Add(l_strTempName); }
+					else l_strTVNames.Add(l_strTempName);
+				}
+			});
             if (l_strTVNames.Count > 0)
                 hallAutomations.turnSystemOff(l_strTVNames, new List<string>(), l_objProgress);
-        }
-
-        private void ddlStart_BR_TV_Source_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //Not Needed at this time
-        }
-
-        private void btnStart_BR_TV_Source_Click(object sender, EventArgs e)
-        {
-            changeBRTVSource();
         }
 
         private void btnStart_All_On_Click(object sender, EventArgs e)
         {
             var l_strTVNames = new List<string>();
-            foreach (var strTV in hallAutomations.AllTelevisions) l_strTVNames.Add(strTV.Split(';')[0]);
+			hallAutomations.AllTelevisions.ForEach(strTV => l_strTVNames.Add(strTV.Split(';')[0]));
             var l_strProjNames = new List<string>();
-            foreach (var strProj in hallAutomations.AllProjectors) l_strProjNames.Add(strProj.Split(';')[0]);
+			hallAutomations.AllProjectors.ForEach(strProj => l_strProjNames.Add(strProj.Split(';')[0]));
             var l_objProgress = new StringBuilder();
             hallAutomations.turnSystemOn(l_strTVNames, l_strProjNames, l_objProgress);
-            changeAllSources();
-
-
-            //using (var pleaseWait = new PleaseWait(DoChanges(l_strTVNames, l_strProjNames, PowerChange.On, SourceChange.All);))
-            //   pleaseWait.ShowDialog(this);
-        }
-
-        private void DoChanges(List<string> p_strTV, List<string> p_strProj, PowerChange p_objPChange = PowerChange.None, SourceChange p_objSourceChange = SourceChange.None)
-        {
-            var l_sbOldLog = new StringBuilder();
-            switch (p_objPChange)
-            {
-                case PowerChange.On :
-                    hallAutomations.turnSystemOn(p_strTV, p_strProj, l_sbOldLog);
-                    break;
-                case PowerChange.Off :
-                    hallAutomations.turnSystemOff(p_strTV, p_strProj, l_sbOldLog);
-                    break;
-            }
-            switch (p_objSourceChange)
-            {
-                case SourceChange.All :
-                    changeAllSources();
-                    break;
-                case SourceChange.AuditoriumTV:
-                    break;
-                case SourceChange.AuditoriumProjector:
-                    break;
-                case SourceChange.BackRoomTV:
-                    break;
-            }
-        }
-
-        private void changeAllSources()
-        {
-            if (ddlStart_All_Source.SelectedIndex > -1)
-            {
-                //Set them all the same - This can be done since the lists are all the same - If the lists differ in the future more logic will be needed.
-                ddlStart_BR_TV_Source.SelectedIndex = ddlStart_MA_Proj_Source.SelectedIndex = ddlStart_MA_TV_Source.SelectedIndex = ddlStart_All_Source.SelectedIndex;
-
-                var l_SourceNum = SwitcherSource[ddlStart_All_Source.SelectedItem.ToString()];
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Projector"], l_SourceNum);
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Library TV"], l_SourceNum);
-                if (chkStart_BR_IncOffice.Checked)
-                    hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Office TV"], l_SourceNum);
-                hallAutomations.SendMatrixCommandByValue(hallAutomations.AllSwitchers[0].Split(';')[0], SwitcherDevice["Auditorium TVs"], l_SourceNum);
-            }
         }
 
         private void btnStart_All_Off_Click(object sender, EventArgs e)
@@ -508,115 +247,6 @@ namespace Visual_Automations
             hallAutomations.turnSystemOff(l_strTVNames, l_strProjNames, l_objProgress);
         }
 
-        private void ddlStart_All_Source_SelectedIndexChanged(object sender, EventArgs e) { }
-
-        private void btnStart_All_Source_Click(object sender, EventArgs e) { changeAllSources(); }
-
-        #endregion
-
-
-        #region Matrix Switcher Stuff
-        private void ConfigureMatrixTab()
-        {
-            ddlSwitchers.SelectedIndex = -1;
-            ddlSwitchers.Items.Clear();
-            lstSwitcherCommands.SelectedIndex = -1;
-            lstSwitcherCommands.Items.Clear();
-            btnExecuteSwitcherCommand.Enabled = false;
-            gbSwitcherCommands.Visible = false;
-            btnSendRawSwitcherCommand.Enabled = false;
-            txtRawSwitcherCommand.Text = "";
-            txtRawSwitcherCommand.Enabled = false;
-            txtRawSwitcherDevice.Text = "";
-            txtRawSwitcherDevice.Enabled = false;
-            txtRawSwitcherSource.Text = "";
-            txtRawSwitcherSource.Enabled = false;
-
-            ConfigureSwitchers();
-        }
-
-
-        private void ConfigureSwitchers()
-        {
-            if (hallAutomations.NumberOfSwitchers > 0)
-            {
-                foreach (var strSW in hallAutomations.AllSwitchers) ddlSwitchers.Items.Add(strSW.Split(';')[0]);
-                if (ddlSwitchers.Items.Count == 1)
-                    ddlSwitchers.SelectedIndex = 0;
-                ConfigureSwitcherCommands();
-            }
-        }
-
-        private void ConfigureSwitcherCommands(bool p_blnActionListOnly = false)
-        {
-            //Don't care about deselect
-            if (ddlSwitchers.SelectedIndex > -1)
-            {
-                if (!p_blnActionListOnly)
-                {
-                    txtRawSwitcherCommand.Enabled = true;
-                    txtRawSwitcherDevice.Enabled = true;
-                    txtRawSwitcherSource.Enabled = true;
-                    btnSendRawSwitcherCommand.Enabled = true;
-                }
-                gbSwitcherCommands.Visible = true;
-
-                //fill in the List of commands
-                lstSwitcherCommands.SelectedIndex = -1;
-                lstSwitcherCommands.Items.Clear();
-                var l_lstrCommandNames = hallAutomations.ListAvailableMatrixCommandsByName(ddlSwitchers.SelectedItem.ToString());
-                foreach (var l_strCommandDisplayName in l_lstrCommandNames) lstSwitcherCommands.Items.Add(l_strCommandDisplayName);
-            }
-            else
-            {
-                if (!p_blnActionListOnly)
-                {
-                    txtRawSwitcherCommand.Text = "";
-                    txtRawSwitcherCommand.Enabled = false;
-                    txtRawSwitcherDevice.Text = "";
-                    txtRawSwitcherDevice.Enabled = false;
-                    txtRawSwitcherSource.Text = "";
-                    txtRawSwitcherSource.Enabled = false;
-                    btnSendRawSwitcherCommand.Enabled = false;
-                }
-            }
-
-            if (lstSwitcherCommands.SelectedIndex == -1)
-                btnExecuteSwitcherCommand.Enabled = false;
-        }
-
-        private void executeSwitcherCommand()
-        {
-            foreach (Control c in this.Controls) { c.Enabled = false; }
-            var l_objStatus = actionStatus.None;
-            var l_strCommand = lstSwitcherCommands.SelectedItem.ToString();
-            var l_strSwitcherName = ddlSwitchers.SelectedItem.ToString();
-
-            try { l_objStatus = hallAutomations.SendMatrixCommand(l_strSwitcherName, l_strCommand); }
-            catch { l_objStatus = actionStatus.Error; }
-            switch (l_objStatus)
-            {
-                case actionStatus.None:
-                case actionStatus.Success:
-                    MessageBox.Show("Command: " + l_strCommand + " has completed.");
-                    break;
-                default:
-                    MessageBox.Show("Command: " + l_strCommand + " has NOT completed Successfully. Please check the logs for more details OR try again");
-                    break;
-            }
-            foreach (Control c in this.Controls) { c.Enabled = true; }
-        }
-        private void ddlSwitchers_SelectedIndexChanged(object sender, EventArgs e) { ConfigureSwitcherCommands(); }
-
-        private void lstSwitcherCommands_SelectedIndexChanged(object sender, EventArgs e) { btnExecuteSwitcherCommand.Enabled = lstSwitcherCommands.SelectedIndex > -1 ? true : false; }
-
-        private void btnExecuteSwitcherCommand_Click(object sender, EventArgs e) { executeSwitcherCommand(); }
-
-        private void btnSendRawSwitcherCommand_Click(object sender, EventArgs e)
-        {
-            if (txtRawSwitcherCommand.Text.Length > 0 && txtRawSwitcherDevice.Text.Length > 0 && txtRawSwitcherSource.Text.Length > 0)
-                hallAutomations.SendMatrixCommandByValue(ddlSwitchers.SelectedItem.ToString(), txtRawSwitcherDevice.Text, txtRawSwitcherSource.Text, txtRawSwitcherCommand.Text);
-        }
         #endregion
 
         #region Projector Lift Command Stuff
@@ -1108,7 +738,7 @@ namespace Visual_Automations
             actionStatus l_objStatus = actionStatus.None;
 
             var strTVsOff = new List<string>();
-            foreach (Control c in gbTVs.Controls)
+			foreach (Control c in gbTVs.Controls)
             {
                 if (c is CheckBox)
                 {
@@ -1129,7 +759,6 @@ namespace Visual_Automations
 
             if (strProjsOff.Count == 0 && strTVsOff.Count == 0) MessageBox.Show("No devices were selected and therefore This action will not be performed");
             else l_objStatus = hallAutomations.turnSystemOff(strTVsOff, strProjsOff, l_objProgress);
-            //Console.Write(l_objProgress.ToString());
 
             switch (l_objStatus)
             {
@@ -1151,47 +780,5 @@ namespace Visual_Automations
         {
 
         }
-
-        #region Matrix Commander Test Code - Working
-        /*
-        private void btnSendHTTPCommand_Click(object sender, EventArgs e)
-        {
-            if (txtSWCommand.Text.Length > 0 && txtSWOutput.Text.Length > 0 && txtSWSource.Text.Length > 0)
-            {
-                TestMatrixQuick(txtSWCommand.Text, txtSWOutput.Text, txtSWSource.Text);
-            }
-        }
-        static void TestMatrixQuick(string p_strCommand, string p_strOutput, string p_strSource)
-        {
-            m_intCheckSum = Int32.Parse(p_strCommand) + Int32.Parse(p_strOutput) + Int32.Parse(p_strSource);
-            // Create a request for the URL. 
-            var l_strTestResult = "";
-            try
-            {
-                WebRequest request = WebRequest.Create(string.Format(" http://192.168.1.88/switch.cgi?command={0}&data0={1}&data1={2}&checksum={3}", p_strCommand, p_strOutput, p_strSource, m_intCheckSum.ToString()));
-                // If required by the server, set the credentials.
-                request.Credentials = CredentialCache.DefaultCredentials;
-                // Get the response.
-                WebResponse response = request.GetResponse();
-                // Display the status.
-                l_strTestResult = ((HttpWebResponse)response).StatusDescription;
-                response.Close();
-            }
-            catch (Exception e)
-            {
-
-            }
-            if (l_strTestResult.Length > 0) { MessageBox.Show("Response received: " + l_strTestResult); }
-            else { MessageBox.Show("No Response received"); }
-
-
-        }
-        */
-        #endregion
-
-        #region SplashScreen - Operations
-        
-
-        #endregion
     }
 }

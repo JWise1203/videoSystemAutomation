@@ -49,7 +49,6 @@ namespace khVSAutomation
 
         public List<string> getCommandNames()
         {
-            var l_strFunctionName = "getCommandNames()";
             List<string> l_lstrCommands = new List<string>();
             //TODO: Add Safer Logic so that a list is not provided if the projector is not available.
             l_lstrCommands.Add("Open");

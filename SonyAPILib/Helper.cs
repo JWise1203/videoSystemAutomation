@@ -28,11 +28,7 @@ public static class Extentions
     public static string ChopOffBefore(this string s, string Before)
     {//Usefull function for chopping up strings
         int End = s.ToUpper().IndexOf(Before.ToUpper());
-        if (End > -1)
-        {
-            return s.Substring(End + Before.Length);
-        }
-        return s;
+        return End > -1 ? s.Substring(End + Before.Length) : s;
     }
 
 
@@ -44,11 +40,7 @@ public static class Extentions
     public static string ChopOffAfter(this string s, string After)
     {//Usefull function for chopping up strings
         int End = s.ToUpper().IndexOf(After.ToUpper());
-        if (End > -1)
-        {
-            return s.Substring(0, End);
-        }
-        return s;
+		return End > -1 ? s.Substring(0, End) : s;
     }
 
 

@@ -28,8 +28,7 @@ namespace khVSAutomation
         None = 0,
         Projector = 1,
         ProjectorLift = 2,
-        Television = 3,
-        MatrixSwitcher = 4
+        Television = 3
     }
 
     public enum actionStatus
@@ -80,25 +79,18 @@ namespace khVSAutomation
         private static List<Projector> m_objProjectors = null;
         private static List<Television> m_objTelevisions = null;
         private static List<ProjectorLift> m_objProjectorLifts = null;
-        private static List<MatrixSwitcher> m_objMatrixSwitchers = null;
-        
-        //private static string m_strPublicTelevisionInfo;
-        //private static string m_strPublicProjectorInfo;
-        //private static string m_strPublicSwitcherInfo;
 
         //DB Object - Allow Save/Load from DB instead of from File
         private static AutomationsEntities myDB = null; 
         private static string m_cstrSessionID = "";
         private static logLevel m_objLogLevel;
         private static Logger m_objLogger = null;
-        //private static SonyAPI_Lib m_objSonyAPI = null;
 
         #region Configuration/Information
 
         public int NumberOfProjectors { get{ return m_objProjectors.Count(); } }
         public int NumberOfProjectorLifts { get { return m_objProjectorLifts.Count(); } }
         public int NumberOfTelevisions { get { return m_objTelevisions.Count(); } }
-        public int NumberOfSwitchers { get { return m_objMatrixSwitchers.Count(); } }
 
         //Properties Carry General Information to the UI: [ID;Name|ID;Name]
         public List<string> AllTelevisions { get { return m_lstPublicTelevisionInfo; } }
@@ -136,7 +128,6 @@ namespace khVSAutomation
                 m_objTelevisions = new List<Television>();
                 m_objProjectors = new List<Projector>();
                 m_objProjectorLifts = new List<ProjectorLift>();
-                m_objMatrixSwitchers = new List<MatrixSwitcher>();
                 m_lstPublicProjectorInfo = new List<string>();
                 m_lstPublicProjectorLiftInfo = new List<string>();
                 m_lstPublicSwitcherInfo = new List<string>();
@@ -158,43 +149,23 @@ namespace khVSAutomation
                                            select lifts).ToList();
                 m_objLogger.logToMemory(string.Format("{0}: Projector Lift Count: {1}", l_strFunctionName, l_objProjectorLifts.Count()));
 
-                var l_objMatrixSwitchers = (from switchers in myDB.tblMatrixSwitchers
-                                           orderby switchers.MatrixSwitcherID
-                                           select switchers).ToList();
-                m_objLogger.logToMemory(string.Format("{0}: Matrix Switcher Count: {1}", l_strFunctionName, l_objMatrixSwitchers.Count()));
+				//TVs
+				l_objTelevisions.ForEach(tv => { m_objTelevisions.Add(new Television(tv, m_cstrSessionID, m_objLogLevel)); m_lstPublicTelevisionInfo.Add(string.Format("{0};{1}", tv.Name, tv.TelevisionID)); });
 
-                //TVs
-                foreach (var tv in l_objTelevisions)
-                {
-                    m_objTelevisions.Add(new Television(tv, m_cstrSessionID, m_objLogLevel)); //m_objTelevisions.Add(new Television(tv.Name, tv.IPAddress, tv.MACAddress, m_cstrSessionID, tv.CookieData, tv.CommandList, tv, m_objLogLevel));
-                    m_lstPublicTelevisionInfo.Add(string.Format("{0};{1}", tv.Name, tv.TelevisionID));
-                }
-                
-                //Projectors
-                foreach (var proj in l_objProjectors)
-                {
-                    var l_objLiftAssociations = (from relate in myDB.tblReleateProjectorAndLifts
-                                            join lifts in myDB.tblProjectorLifts on relate.ProjectorLiftID equals lifts.ProjectorLiftID
-                                            where relate.ProjectorID == proj.ProjectorID
-                                            select new { ProjectorID = proj.ProjectorID, LiftID = lifts.ProjectorLiftID, LiftAssociation = lifts.Name }).ToList();
-                    m_objProjectors.Add(new Projector(proj.Name, proj.IPAddress, (l_objLiftAssociations.Count() >= 1? l_objLiftAssociations[0].LiftAssociation : ""), m_cstrSessionID, m_objLogLevel));
-                    m_lstPublicProjectorInfo.Add(string.Format("{0};{1}", proj.Name, proj.ProjectorID));
-                }
+				//Projectors
+				l_objProjectors.ForEach(proj =>
+				{
+					var l_objLiftAssociations = (from relate in myDB.tblReleateProjectorAndLifts
+												 join lifts in myDB.tblProjectorLifts on relate.ProjectorLiftID equals lifts.ProjectorLiftID
+												 where relate.ProjectorID == proj.ProjectorID
+												 select new { ProjectorID = proj.ProjectorID, LiftID = lifts.ProjectorLiftID, LiftAssociation = lifts.Name }).ToList();
+					m_objProjectors.Add(new Projector(proj.Name, proj.IPAddress, (l_objLiftAssociations.Count() >= 1 ? l_objLiftAssociations[0].LiftAssociation : ""), m_cstrSessionID, m_objLogLevel));
+					m_lstPublicProjectorInfo.Add(string.Format("{0};{1}", proj.Name, proj.ProjectorID));
+				});
 
-                //Projector Lifts
-                //TODO: MoveTime was left out of the DB - This may need to be added back - for Now it's hardcoded
-                foreach (var lifts in l_objProjectorLifts)
-                {
-                    m_objProjectorLifts.Add(new ProjectorLift(lifts.Name, lifts.COMPort, 15000, m_cstrSessionID, m_objLogLevel));
-                    m_lstPublicProjectorLiftInfo.Add(string.Format("{0};{1}", lifts.Name, lifts.ProjectorLiftID));
-                }
-
-                //Matrix Switchers
-                foreach (var switchers in l_objMatrixSwitchers)
-                {
-                    m_objMatrixSwitchers.Add(new MatrixSwitcher(switchers.Name, switchers.COMPort, switchers.IPAddress, m_cstrSessionID, m_objLogLevel));
-                    m_lstPublicSwitcherInfo.Add(string.Format("{0};{1}", switchers.Name, switchers.MatrixSwitcherID));
-                }
+				//Projector Lifts
+				//TODO: MoveTime was left out of the DB - This may need to be added back - for Now it's hardcoded
+				l_objProjectorLifts.ForEach(lifts => { m_objProjectorLifts.Add(new ProjectorLift(lifts.Name, lifts.COMPort, 15000, m_cstrSessionID, m_objLogLevel)); m_lstPublicProjectorLiftInfo.Add(string.Format("{0};{1}", lifts.Name, lifts.ProjectorLiftID)); });
             }
             catch (System.Exception ex)
             {
@@ -211,30 +182,15 @@ namespace khVSAutomation
             m_objLogger.logToMemory("==============CURRENT APPLICATION SETTINGS==============");
             m_objLogger.logToMemory("-----Televisions-----");
             int i = 0;
-            foreach (Television objTempTV in m_objTelevisions)
-            {
-                i++;
-                m_objLogger.logToMemory("TV #" + i.ToString() + " Information");
-                m_objLogger.logToMemory(objTempTV.GetDeviceInfo());
-            }
+			m_objTelevisions.ForEach(objTempTV => { i++; m_objLogger.logToMemory("TV #" + i.ToString() + " Information"); m_objLogger.logToMemory(objTempTV.GetDeviceInfo()); });
 
             i = 0;
             m_objLogger.logToMemory("-----Projectors-----");
-            foreach (Projector objTempProj in m_objProjectors)
-            {
-                i++;
-                m_objLogger.logToMemory("Projector #" + i.ToString() + " Information");
-                m_objLogger.logToMemory(objTempProj.GetDeviceInfo());
-            }
+			m_objProjectors.ForEach(objTempProj => { i++; m_objLogger.logToMemory("Projector #" + i.ToString() + " Information"); m_objLogger.logToMemory(objTempProj.GetDeviceInfo()); });
 
             i = 0;
             m_objLogger.logToMemory("-----Projector Lifts-----");
-            foreach (ProjectorLift objTempLift in m_objProjectorLifts)
-            {
-                i++;
-                m_objLogger.logToMemory("Lift #" + i.ToString() + " Information");
-                m_objLogger.logToMemory(objTempLift.GetDeviceInfo());
-            }
+			m_objProjectorLifts.ForEach(objTempLift => { i++; m_objLogger.logToMemory("Lift #" + i.ToString() + " Information"); m_objLogger.logToMemory(objTempLift.GetDeviceInfo()); });
             m_objLogger.logToMemory("==============END OF APPLICATION SETTINGS===============");
 
             return m_objLogger.writePendingToDB(actionStatus.Success, true);
@@ -248,32 +204,13 @@ namespace khVSAutomation
             switch (p_objdeviceType)
             {
                 case DeviceTypes.Projector:
-                    foreach (Projector l_objProj in m_objProjectors)
-                    {
-                        l_strDevices.Add(i + "|" + l_objProj.GetDeviceInfo(true));
-                        i++;
-                    }
+					m_objProjectors.ForEach(l_objProj => { l_strDevices.Add(i + "|" + l_objProj.GetDeviceInfo(true)); i++; });
                     break;
                 case DeviceTypes.ProjectorLift:
-                    foreach (ProjectorLift l_objLift in m_objProjectorLifts)
-                    {
-                        l_strDevices.Add(i + "|" + l_objLift.GetDeviceInfo(true));
-                        i++;
-                    }
+					m_objProjectorLifts.ForEach(l_objLift => { l_strDevices.Add(i + "|" + l_objLift.GetDeviceInfo(true)); i++;});
                     break;
                 case DeviceTypes.Television:
-                    foreach (Television l_objTV in m_objTelevisions)
-                    {
-                        l_strDevices.Add(i + "|" + l_objTV.GetDeviceInfo(true));
-                        i++;
-                    }
-                    break;
-                case DeviceTypes.MatrixSwitcher:
-                    foreach (MatrixSwitcher l_objSW in m_objMatrixSwitchers)
-                    {
-                        l_strDevices.Add(i + "|" + l_objSW.GetDeviceInfo(true));
-                        i++;
-                    }
+					m_objTelevisions.ForEach(l_objTV => { l_strDevices.Add(i + "|" + l_objTV.GetDeviceInfo(true)); i++; } );
                     break;
             }
             return l_strDevices;
@@ -478,14 +415,7 @@ namespace khVSAutomation
 
             try
             {
-                foreach(var strListItem in p_strList)
-                {
-                    if (strListItem.Equals(p_strCurrentItem, StringComparison.OrdinalIgnoreCase)) 
-                    {
-                        l_blnIn = true;
-                        break;
-                    }
-                }
+				l_blnIn =  p_strList.Exists(item => item.Equals(p_strCurrentItem, StringComparison.OrdinalIgnoreCase));
             }
             catch 
             { 
@@ -498,31 +428,28 @@ namespace khVSAutomation
         public actionStatus PowerOnSingleTV(string p_strTVName)
         {
             actionStatus l_objTVStatus = actionStatus.None;
-            var l_strFunctionName = "PowerOffSingleTV";
+            var l_strFunctionName = "PowerOnSingleTV";
             try
             {
-                foreach (var l_objTelevision in m_objTelevisions)
-                {
-                    if(l_objTelevision.TelevisionName == p_strTVName)
-                    {
-                        m_objLogger.logToMemory("Waking up TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
-                        l_objTVStatus = l_objTelevision.WakeupTV();
-                        m_objLogger.logToMemory("Call to Wake up TV Completed", l_objTVStatus);
-                        if (l_objTVStatus != actionStatus.Error)
-                        {
-                            if (!l_objTelevision.TelevisionRegistered)
-                            {
-                                l_objTVStatus = actionStatus.PartialError;
-                                m_objLogger.logToMemory("The TV Needs to be Registered before any other commands will work.", l_objTVStatus);
-                            }
-                            else
-                            {
-                                l_objTVStatus = actionStatus.Success;
-                            }
-                        }
-                        break;
-                    }
-                }
+				var l_objTelevision = m_objTelevisions.Find(tv => tv.TelevisionName == p_strTVName);
+				if (l_objTelevision != null)
+				{
+					m_objLogger.logToMemory("Waking up TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
+					l_objTVStatus = l_objTelevision.WakeupTV();
+					m_objLogger.logToMemory("Call to Wake up TV Completed", l_objTVStatus);
+					if (l_objTVStatus != actionStatus.Error)
+					{
+						if (!l_objTelevision.TelevisionRegistered)
+						{
+							l_objTVStatus = actionStatus.PartialError;
+							m_objLogger.logToMemory("The TV Needs to be Registered before any other commands will work.", l_objTVStatus);
+						}
+						else
+						{
+							l_objTVStatus = actionStatus.Success;
+						}
+					}
+				}
             }
             catch (Exception e)
             {
@@ -540,24 +467,21 @@ namespace khVSAutomation
             var l_strFunctionName = "PowerOffSingleTV";
             try
             {
-                foreach (var l_objTelevision in m_objTelevisions)
-                {
-                    if (l_objTelevision.TelevisionName == p_strTVName)
-                    {
-                        try
-                        {
-                            m_objLogger.logToMemory("Turning Off TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
-                            l_objTVStatus = l_objTelevision.PowerOffTV();
-                            m_objLogger.logToMemory("TV Off", l_objTVStatus);
-                        }
-                        catch (Exception e)
-                        {
-                            l_objTVStatus = actionStatus.Error;
-                            m_objLogger.logToMemory("Issue Turning off " + l_objTelevision.TelevisionName + ": " + e.ToString(), actionStatus.Error);
-                        }
-                        break;
-                    }
-                }
+				var l_objTelevision = m_objTelevisions.Find(tv => tv.TelevisionName == p_strTVName);
+				if (l_objTelevision != null)
+				{
+					try
+					{
+						m_objLogger.logToMemory("Turning Off TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
+						l_objTVStatus = l_objTelevision.PowerOffTV();
+						m_objLogger.logToMemory("TV Off", l_objTVStatus);
+					}
+					catch (Exception e)
+					{
+						l_objTVStatus = actionStatus.Error;
+						m_objLogger.logToMemory("Issue Turning off " + l_objTelevision.TelevisionName + ": " + e.ToString(), actionStatus.Error);
+					}
+				}
             }
             catch (Exception e)
             {
@@ -584,103 +508,87 @@ namespace khVSAutomation
                 //TVs
                 if (p_strTVsOn.Count > 0)
                 {
-                    foreach (var l_objTelevision in m_objTelevisions)
-                    {
-                        if (isItemInList(l_objTelevision.TelevisionName, p_strTVsOn))
-                        {
-                            m_objLogger.logToMemory("Waking up TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
-                            DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.WakeupTV()));
-                            m_objLogger.logToMemory("Call to Wake up TV Completed", l_objTVStatus);
-                            if (l_objTVStatus != actionStatus.Error)
-                            {
-                                DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.TelevisionRegistered == false ? actionStatus.PartialError : actionStatus.Success));
-                                m_objLogger.logToMemory("The TV Needs to be Registered before any other commands will work.", l_objTVStatus);
-                            }
-                        }
-                        else
-                        {
-                            l_objTVStatus = actionStatus.Error;
-                            if (l_blnLoggingProgress)
-                                p_objProgress.AppendLine("Television " + l_objTelevision.TelevisionName + " is not configured. Please check the configuration settings.");
-                        }
-                    }
+					m_objTelevisions.ForEach(l_objTelevision =>
+					{
+						if (isItemInList(l_objTelevision.TelevisionName, p_strTVsOn))
+						{
+							m_objLogger.logToMemory("Waking up TV: " + l_objTelevision.TelevisionName, l_objTVStatus);
+							DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.WakeupTV()));
+							m_objLogger.logToMemory("Call to Wake up TV Completed", l_objTVStatus);
+							if (l_objTVStatus != actionStatus.Error)
+							{
+								DetermineOverallStatus(ref l_objTVStatus, (l_objTelevision.TelevisionRegistered == false ? actionStatus.PartialError : actionStatus.Success));
+								m_objLogger.logToMemory("The TV Needs to be Registered before any other commands will work.", l_objTVStatus);
+							}
+						}
+						else
+						{
+							l_objTVStatus = actionStatus.Error;
+							if (l_blnLoggingProgress)
+								p_objProgress.AppendLine("Television " + l_objTelevision.TelevisionName + " is not configured. Please check the configuration settings.");
+						}
+					});
                 }
 
                 //Projectors
                 if (p_strProjsOn.Count > 0)
                 {
-                    foreach (var l_objProjector in m_objProjectors)
-                    {
-                        if (isItemInList(l_objProjector.projectorName, p_strProjsOn))
-                        {
-                            switch (l_objProjector.checkProjectorPowerStatus())
-                            {
-                                case "OFF":
-                                case "UNKNOWN":
-                                    if (l_blnLoggingProgress)
-                                        p_objProgress.AppendLine("Lowering projector lift...");
+					ProjectorLift l_objLift;
+					m_objProjectors.ForEach(l_objProjector =>
+					{
+						if (isItemInList(l_objProjector.projectorName, p_strProjsOn))
+						{
+							switch (l_objProjector.checkProjectorPowerStatus())
+							{
+								case "OFF":
+								case "UNKNOWN":
+									if (l_blnLoggingProgress) p_objProgress.AppendLine("Lowering projector lift...");
+									l_objLift = m_objProjectorLifts.Find(projLift => l_objProjector.projectorLiftAssociation == projLift.LiftName);
+									if (l_objLift != null) AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
+									DetermineOverallStatus(ref l_objProjStatus, (l_objProjector.turnOnProjector()));
+									break;
 
+								case "ON":
+									//Even though the projector is already on, there may be cases where the projector lift was not extended before hand 
+									//(e.g. Manual operations), so let's extend it now for good measure
+									if (l_blnLoggingProgress) p_objProgress.AppendLine("Projector: " + l_objProjector.projectorName + " was already on!..... Attempting to Extend Lift Now.");
+									l_objLift = m_objProjectorLifts.Find(projLift => l_objProjector.projectorLiftAssociation == projLift.LiftName);
+									if (l_objLift != null) AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
+									DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
 
-                                    //Task.WaitAll(m_objProjectorLifts[l_intIterator - 1].doLiftAction(LiftAction.Extend));
-                                    foreach (var l_objLift in m_objProjectorLifts)
-                                    {
-                                        if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
-                                        {
-                                            AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
-                                            break;
-                                        }
-                                    }
-                                    DetermineOverallStatus(ref l_objProjStatus, (l_objProjector.turnOnProjector()));
-                                    break;
+									break;
+							}
 
-                                case "ON":
-                                    //Even though the projector is already on, there may be cases where the projector lift was not extended before hand 
-                                    //(e.g. Manual operations), so let's extend it now for good measure
-                                    if (l_blnLoggingProgress)
-                                        p_objProgress.AppendLine("Projector: " + l_objProjector.projectorName + " was already on!..... Attempting to Extend Lift Now.");
-                                    foreach (var l_objLift in m_objProjectorLifts)
-                                    {
-                                        if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
-                                        {
-                                            AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Extend));
-                                            break;
-                                        }
-                                    }
-                                    DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
+							//Wait until projector is fully powered on
+							if (l_blnLoggingProgress)
+								p_objProgress.AppendLine("Waiting for projector to power on and warmup...");
 
-                                    break;
-                            }
+							int l_intProjWarmUpTime = 0;
+							while ((l_objProjector.checkProjectorPowerStatus() != "ON") && (l_intProjWarmUpTime < 30000))
+							{
+								System.Threading.Thread.Sleep(750); // pause for 3/4 second;
+								l_intProjWarmUpTime += 750;
+								//Console.WriteLine("Current Projector Status: " + hallAutomations.getProjectorStatus());
 
-                            //Wait until projector is fully powered on
-                            if (l_blnLoggingProgress)
-                                p_objProgress.AppendLine("Waiting for projector to power on and warmup...");
+								if (l_intProjWarmUpTime >= 30000)
+								{
+									if (l_blnLoggingProgress)
+										p_objProgress.AppendLine("It's taking the projector #" + l_objProjector.projectorName + " too long to Turn On/Warm Up. Moving on. Please check the projector settings");
+									DetermineOverallStatus(ref l_objProjStatus, actionStatus.PartialError);
+								}
+							}
 
-                            int l_intProjWarmUpTime = 0;
-                            while ((l_objProjector.checkProjectorPowerStatus() != "ON") && (l_intProjWarmUpTime < 30000))
-                            {
-                                System.Threading.Thread.Sleep(750); // pause for 3/4 second;
-                                l_intProjWarmUpTime += 750;
-                                //Console.WriteLine("Current Projector Status: " + hallAutomations.getProjectorStatus());
-
-                                if (l_intProjWarmUpTime >= 30000)
-                                {
-                                    if (l_blnLoggingProgress)
-                                        p_objProgress.AppendLine("It's taking the projector #" + l_objProjector.projectorName + " too long to Turn On/Warm Up. Moving on. Please check the projector settings");
-                                    DetermineOverallStatus(ref l_objProjStatus, actionStatus.PartialError);
-                                }
-                            }
-
-                            if (l_blnLoggingProgress) p_objProgress.AppendLine("Pausing for 5 seconds, then changing the projectors input to HDMI...");
-                            System.Threading.Thread.Sleep(5000);
-                            //l_objProjector.changeProjectorToHDMI();
-                            DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
-                        }
-                        else
-                        {
-                            l_objProjStatus = actionStatus.Error;
-                            p_objProgress.AppendLine("Projector " + l_objProjector.projectorName + " is not configured. Please check the configuration settings.");
-                        }
-                    }
+							if (l_blnLoggingProgress) p_objProgress.AppendLine("Pausing for 5 seconds, then changing the projectors input to HDMI...");
+							System.Threading.Thread.Sleep(5000);
+							//l_objProjector.changeProjectorToHDMI();
+							DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
+						}
+						else
+						{
+							l_objProjStatus = actionStatus.Error;
+							p_objProgress.AppendLine("Projector " + l_objProjector.projectorName + " is not configured. Please check the configuration settings.");
+						}
+					});
                 }
 
                 if (l_objProjStatus == actionStatus.Success && l_objTVStatus == actionStatus.Success)
@@ -838,98 +746,87 @@ namespace khVSAutomation
                 actionStatus l_objTVStatus, l_objProjStatus, l_objLiftStatus;
                 l_objLiftStatus = l_objTVStatus = l_objProjStatus = actionStatus.None;
 
-                //TVs
-                foreach (var l_objTelevision in m_objTelevisions)
-                {
-                    if (isItemInList(l_objTelevision.TelevisionName, p_strTVsOff))
-                    {
-                        try
-                        {
-                            DetermineOverallStatus(ref l_objTVStatus, l_objTelevision.PowerOffTV());
-                        }
-                        catch (Exception e)
-                        {
-                            l_objTVStatus = actionStatus.Error;
-                            m_objLogger.logToMemory("Issue Turning off " + l_objTelevision.TelevisionName + ": " + e.ToString(), actionStatus.Error);
-                        }
-                    }
-                    else
-                    {
-                        l_objTVStatus = actionStatus.Error;
-                        if (l_blnLoggingProgress)
-                            p_objProgress.AppendLine("Television " + l_objTelevision.TelevisionName + " is not configured. Please check the configuration settings.");
-                    }
-                }
+				//TVs
+				m_objTelevisions.ForEach(l_objTelevision =>
+				{
+					if (isItemInList(l_objTelevision.TelevisionName, p_strTVsOff))
+					{
+						try
+						{
+							DetermineOverallStatus(ref l_objTVStatus, l_objTelevision.PowerOffTV());
+						}
+						catch (Exception e)
+						{
+							l_objTVStatus = actionStatus.Error;
+							m_objLogger.logToMemory("Issue Turning off " + l_objTelevision.TelevisionName + ": " + e.ToString(), actionStatus.Error);
+						}
+					}
+					else
+					{
+						l_objTVStatus = actionStatus.Error;
+						if (l_blnLoggingProgress)
+							p_objProgress.AppendLine("Television " + l_objTelevision.TelevisionName + " is not configured. Please check the configuration settings.");
+					}
+				});
 
-                //Projectors
-                foreach (var l_objProjector in m_objProjectors)
-                {
-                    if(isItemInList(l_objProjector.projectorName, p_strProjsOff))
-                    {
-                        switch (l_objProjector.checkProjectorPowerStatus())
-                        {
-                            case "OFF":
-                                //Even though the projector is already off, there may be cases where the projector lift was not retracted before hand 
-                                //(e.g. Manual operations), so let's retract it now for good measure
-                                if (l_blnLoggingProgress)
-                                    p_objProgress.AppendLine("Projector " + l_objProjector + " was already off!..... Attempting to Retract Lift Now.");
-                                foreach (var l_objLift in m_objProjectorLifts)
-                                {
-                                    if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
-                                    {
-                                        AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Retract));
-                                        break;
-                                    }
-                                }
-                                DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
-                                break;
-                            case "ON":
-                            case "UNKNOWN":
-                                DetermineOverallStatus(ref l_objProjStatus, (l_objProjector.turnOffProjector()));
+				//Projectors
+				m_objProjectors.ForEach(l_objProjector =>
+				{
+					if (isItemInList(l_objProjector.projectorName, p_strProjsOff))
+					{
+						ProjectorLift l_objLift;
+						switch (l_objProjector.checkProjectorPowerStatus())
+						{
+							case "OFF":
+								//Even though the projector is already off, there may be cases where the projector lift was not retracted before hand 
+								//(e.g. Manual operations), so let's retract it now for good measure
+								if (l_blnLoggingProgress)
+									p_objProgress.AppendLine("Projector " + l_objProjector + " was already off!..... Attempting to Retract Lift Now.");
+								l_objLift = m_objProjectorLifts.Find(projlift => l_objProjector.projectorLiftAssociation == projlift.LiftName);
+								if (l_objLift != null) AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Retract));
+								DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success);
+								break;
+							case "ON":
+							case "UNKNOWN":
+								DetermineOverallStatus(ref l_objProjStatus, (l_objProjector.turnOffProjector()));
 
-                                //Wait until projector is fully powered off
-                                if (l_blnLoggingProgress) p_objProgress.AppendLine("Waiting for projector to power off and cooldown...");
-                                int l_intProjCoolDownTime = 0;
-                                while ((l_objProjector.checkProjectorPowerStatus() != "UNKNOWN" &&
-                                        l_objProjector.checkProjectorPowerStatus() != "OFF") || 
-                                        (l_intProjCoolDownTime < 45000))
-                                {
-                                    System.Threading.Thread.Sleep(1000); // pause for 1/4 second;
-                                    l_intProjCoolDownTime += 1000;
-                                    if (l_blnLoggingProgress) p_objProgress.AppendLine("Current Projector Status: " + l_objProjector.getProjectorStatus());
+								//Wait until projector is fully powered off
+								if (l_blnLoggingProgress) p_objProgress.AppendLine("Waiting for projector to power off and cooldown...");
+								int l_intProjCoolDownTime = 0;
+								while ((l_objProjector.checkProjectorPowerStatus() != "UNKNOWN" &&
+										l_objProjector.checkProjectorPowerStatus() != "OFF") ||
+										(l_intProjCoolDownTime < 45000))
+								{
+									System.Threading.Thread.Sleep(1000); // pause for 1/4 second;
+									l_intProjCoolDownTime += 1000;
+									if (l_blnLoggingProgress) p_objProgress.AppendLine("Current Projector Status: " + l_objProjector.getProjectorStatus());
 
-                                    if (l_intProjCoolDownTime >= 90000)
-                                    {
-                                        if (l_blnLoggingProgress)
-                                            p_objProgress.AppendLine("It's taking the projector " + l_objProjector.projectorName + " too long to Cool Down. Moving on. Please check the projector settings");
-                                        DetermineOverallStatus(ref l_objProjStatus, actionStatus.PartialError);
-                                    }
-                                }
+									if (l_intProjCoolDownTime >= 90000)
+									{
+										if (l_blnLoggingProgress)
+											p_objProgress.AppendLine("It's taking the projector " + l_objProjector.projectorName + " too long to Cool Down. Moving on. Please check the projector settings");
+										DetermineOverallStatus(ref l_objProjStatus, actionStatus.PartialError);
+									}
+								}
 
-                                if (l_intProjCoolDownTime < 90000)
-                                {
-                                    DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
-                                    if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");
-                                    foreach (var l_objLift in m_objProjectorLifts)
-                                    {
-                                        if (l_objProjector.projectorLiftAssociation == l_objLift.LiftName)
-                                        {
-                                            AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Retract));
-                                            break;
-                                        }
-                                    }
-                                    if (l_blnLoggingProgress) p_objProgress.AppendLine("Completed Retracting projector lift...");
-                                }
-                                else if (l_blnLoggingProgress) p_objProgress.AppendLine("The Projector did not cool down in time. Lift Retraction Cancelled for saftey reasons.");
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        l_objProjStatus = actionStatus.Error;
-                        p_objProgress.AppendLine("Projector " + l_objProjector.projectorName + " is not configured. Please check the configuration settings.");
-                    }
-                }
+								if (l_intProjCoolDownTime < 90000)
+								{
+									DetermineOverallStatus(ref l_objProjStatus, actionStatus.Success); //Cooled Down in Time
+									if (l_blnLoggingProgress) p_objProgress.AppendLine("Retracting projector lift...");
+									l_objLift = m_objProjectorLifts.Find(projlift => l_objProjector.projectorLiftAssociation == projlift.LiftName);
+									if (l_objLift != null) AsyncContext.Run(() => l_objLift.doLiftAction(LiftAction.Retract));
+									if (l_blnLoggingProgress) p_objProgress.AppendLine("Completed Retracting projector lift...");
+								}
+								else if (l_blnLoggingProgress) p_objProgress.AppendLine("The Projector did not cool down in time. Lift Retraction Cancelled for saftey reasons.");
+								break;
+						}
+					}
+					else
+					{
+						l_objProjStatus = actionStatus.Error;
+						p_objProgress.AppendLine("Projector " + l_objProjector.projectorName + " is not configured. Please check the configuration settings.");
+					}
+				});
                 
                 if (l_objProjStatus == actionStatus.Success && l_objTVStatus == actionStatus.Success)
                     l_objOverallStatus = actionStatus.Success;
@@ -956,22 +853,12 @@ namespace khVSAutomation
 
         public actionStatus WakeupTV(int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
-            var l_objStatus = actionStatus.None;
-
-            if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].WakeupTV();
-
-            return l_objStatus;
-        }
+			return (isDeviceConfigured(p_intTVID, DeviceTypes.Television))? m_objTelevisions[p_intTVID - 1].WakeupTV() : actionStatus.None;
+		}
 
         public actionStatus PowerOffTV(int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
-            var l_objStatus = actionStatus.None;
-
-            if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].PowerOffTV();
-
-            return l_objStatus;
+            return (isDeviceConfigured(p_intTVID, DeviceTypes.Television))? m_objTelevisions[p_intTVID - 1].PowerOffTV() : actionStatus.None;
         }
 
         /// <summary>
@@ -988,21 +875,17 @@ namespace khVSAutomation
             var l_strFunctionName = "SendTVCommand";
             try
             {
-                foreach (var l_objTelevision in m_objTelevisions)
-                {
-                    if (l_objTelevision.TelevisionName == p_strTVName)
-                    {
-                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the TV.", l_strFunctionName , p_strTVName, p_strCommandName), l_objTVStatus);
-                        l_objTVStatus = l_objTelevision.SendCommandByName(p_strCommandName);
+				var l_objTelevision = m_objTelevisions.Find(tv => tv.TelevisionName == p_strTVName);
+				if (l_objTelevision != null)
+				{
+					m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the TV.", l_strFunctionName, p_strTVName, p_strCommandName), l_objTVStatus);
+					l_objTVStatus = l_objTelevision.SendCommandByName(p_strCommandName);
 
-                        if (l_objTVStatus == actionStatus.Success)
-                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strTVName, l_objTVStatus.ToString(), p_strCommandName), l_objTVStatus);
-                        else if (l_objTVStatus == actionStatus.Error)
-                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
-
-                        break;
-                    }
-                }
+					if (l_objTVStatus == actionStatus.Success)
+						m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strTVName, l_objTVStatus.ToString(), p_strCommandName), l_objTVStatus);
+					else if (l_objTVStatus == actionStatus.Error)
+						throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
+				}
             }
             catch (Exception e)
             {
@@ -1020,21 +903,17 @@ namespace khVSAutomation
             var l_strFunctionName = "SendProjectorCommand";
             try
             {
-                foreach (var l_objProjector in m_objProjectors)
-                {
-                    if (l_objProjector.projectorName == p_strProjectorName)
-                    {
-                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Projector.", l_strFunctionName, p_strProjectorName, p_strCommandName), l_objProjectorStatus);
-                        l_objProjectorStatus = l_objProjector.SendCommandByName(p_strCommandName);
+				var l_objProjector = m_objProjectors.Find(proj => proj.projectorName == p_strProjectorName);
+				if (l_objProjector != null)
+				{
+					m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Projector.", l_strFunctionName, p_strProjectorName, p_strCommandName), l_objProjectorStatus);
+					l_objProjectorStatus = l_objProjector.SendCommandByName(p_strCommandName);
 
-                        if (l_objProjectorStatus == actionStatus.Success)
-                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strProjectorName, l_objProjectorStatus.ToString(), p_strCommandName), l_objProjectorStatus);
-                        else if (l_objProjectorStatus == actionStatus.Error)
-                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
-
-                        break;
-                    }
-                }
+					if (l_objProjectorStatus == actionStatus.Success)
+						m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strProjectorName, l_objProjectorStatus.ToString(), p_strCommandName), l_objProjectorStatus);
+					else if (l_objProjectorStatus == actionStatus.Error)
+						throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
+				}
             }
             catch (Exception e)
             {
@@ -1052,20 +931,17 @@ namespace khVSAutomation
             var l_strFunctionName = "SendLiftCommand";
             try
             {
-                foreach (var l_objLift in m_objProjectorLifts)
-                {
-                    if (l_objLift.LiftName == p_strLiftName)
-                    {
-                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Projector Lift.", l_strFunctionName, p_strLiftName, p_strCommandName), l_objLiftStatus);
-                        l_objLiftStatus = l_objLift.SendCommandByName(p_strCommandName);
+				var l_objLift = m_objProjectorLifts.Find(lift => lift.LiftName == p_strLiftName);
+				if (l_objLift != null)
+				{
+					m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Projector Lift.", l_strFunctionName, p_strLiftName, p_strCommandName), l_objLiftStatus);
+					l_objLiftStatus = l_objLift.SendCommandByName(p_strCommandName);
 
-                        if (l_objLiftStatus == actionStatus.Success)
-                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strLiftName, l_objLiftStatus.ToString(), p_strCommandName), l_objLiftStatus);
-                        else if (l_objLiftStatus == actionStatus.Error)
-                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
-                        break;
-                    }
-                }
+					if (l_objLiftStatus == actionStatus.Success)
+						m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strLiftName, l_objLiftStatus.ToString(), p_strCommandName), l_objLiftStatus);
+					else if (l_objLiftStatus == actionStatus.Error)
+						throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
+				}
             }
             catch (Exception e)
             {
@@ -1076,38 +952,6 @@ namespace khVSAutomation
 
             return l_objLiftStatus;
         }
-
-        public actionStatus SendMatrixCommand(string p_strMatrixName, string p_strCommandName)
-        {
-            actionStatus l_objMatrixStatus = actionStatus.None;
-            var l_strFunctionName = "SendMatrixCommand";
-            try
-            {
-                foreach (var l_objMatrix in m_objMatrixSwitchers)
-                {
-                    if (l_objMatrix.SwitcherName == p_strMatrixName)
-                    {
-                        m_objLogger.logToMemory(string.Format("{0}: {1}: Sending {2} to the Matrix Switcher.", l_strFunctionName, p_strMatrixName, p_strCommandName), l_objMatrixStatus);
-                        l_objMatrixStatus = l_objMatrix.SendCommandByName(p_strCommandName);
-
-                        if (l_objMatrixStatus == actionStatus.Success)
-                            m_objLogger.logToMemory(string.Format("{0}: {1}: A status of: {2} was returned from the call to SendCommandByName({3})", l_strFunctionName, p_strMatrixName, l_objMatrixStatus.ToString(), p_strCommandName), l_objMatrixStatus);
-                        else if (l_objMatrixStatus == actionStatus.Error)
-                            throw new Exception(string.Format("An Error Status was returned from the call to SendCommandByName({0})", p_strCommandName));
-                        break;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                l_objMatrixStatus = actionStatus.Error;
-                m_objLogger.logToMemory(string.Format("{0}: {1}: An Error Occurred sending {2} to the Matrix Switcher: {3}", l_strFunctionName, p_strMatrixName, p_strCommandName, e.ToString()), l_objMatrixStatus);
-            }
-            finally { m_objLogger.writePendingToDB(l_objMatrixStatus, p_strFunctionName: l_strFunctionName); }
-
-            return l_objMatrixStatus;
-        }
-
 
         /// <summary>
         /// Obsolete.
@@ -1120,12 +964,7 @@ namespace khVSAutomation
         /// <returns></returns>
         public actionStatus SendCommandByValue(string p_strCommand, int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
-            var l_objStatus = actionStatus.None;
-
-            if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].SendCommandByValue(p_strCommand);
-
-            return l_objStatus;
+            return (isDeviceConfigured(p_intTVID, DeviceTypes.Television))? m_objTelevisions[p_intTVID - 1].SendCommandByValue(p_strCommand) : actionStatus.None;
         }
 
         /// <summary>
@@ -1139,30 +978,13 @@ namespace khVSAutomation
             var l_strFunctionName = "SendCommandByValue()";
             var l_objStatus = actionStatus.None;
             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
-            foreach (var l_objTelevision in m_objTelevisions)
-            {
-                if (l_objTelevision.TelevisionName == p_strSelectedTV)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Television Located.", l_strFunctionName, p_strSelectedTV));
-                    l_objStatus = l_objTelevision.SendCommandByValue(p_strCommand);
-                    break;
-                }
-            }
-
-            switch(l_objStatus)
-            {
-                case actionStatus.Success:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
-                    break;
-                case actionStatus.PartialError:
-                case actionStatus.Error:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
-                    break;
-                case actionStatus.None :
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedTV, p_strCommand));
-                    break;
-            }
-
+			var l_objTelevision = m_objTelevisions.Find(tv => tv.TelevisionName == p_strSelectedTV);
+			if (l_objTelevision != null)
+			{
+				m_objLogger.logToMemory(string.Format("{0}: {1}: Television Located.", l_strFunctionName, p_strSelectedTV));
+				l_objStatus = l_objTelevision.SendCommandByValue(p_strCommand);
+			}
+			m_objLogger.logToMemory(GetFormattedStatusLog(l_objStatus,l_strFunctionName, p_strSelectedTV, p_strCommand));
             return l_objStatus;
         }
 
@@ -1177,96 +999,50 @@ namespace khVSAutomation
             var l_strFunctionName = "SendProjectorCommandByValue()";
             var l_objStatus = actionStatus.None;
             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
-            foreach (var l_objProjector in m_objProjectors)
-            {
-                if (l_objProjector.projectorName == p_strSelectedProjector)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Located.", l_strFunctionName, p_strSelectedProjector));
-                    l_objStatus = l_objProjector.SendCommandByValue(p_strCommand);
-                    break;
-                }
-            }
-
-            switch (l_objStatus)
-            {
-                case actionStatus.Success:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
-                    break;
-                case actionStatus.PartialError:
-                case actionStatus.Error:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
-                    break;
-                case actionStatus.None:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedProjector, p_strCommand));
-                    break;
-            }
-
+			var l_objProjector = m_objProjectors.Find(proj => proj.projectorName == p_strSelectedProjector);
+			if (l_objProjector != null)
+			{
+				m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Located.", l_strFunctionName, p_strSelectedProjector));
+				l_objStatus = l_objProjector.SendCommandByValue(p_strCommand);
+			}
+			m_objLogger.logToMemory(GetFormattedStatusLog(l_objStatus, l_strFunctionName, p_strSelectedProjector, p_strCommand));
             return l_objStatus;
         }
 
-        public actionStatus SendLiftCommandByValue(string p_strSelectedLift, string p_strCommand)
+		public actionStatus SendLiftCommandByValue(string p_strSelectedLift, string p_strCommand)
         {
             var l_strFunctionName = "SendLiftCommandByValue()";
             var l_objStatus = actionStatus.None;
             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-            foreach (var l_objLift in m_objProjectorLifts)
-            {
-                if (l_objLift.LiftName == p_strSelectedLift)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Lift Located.", l_strFunctionName, p_strSelectedLift));
-                    l_objStatus = l_objLift.SendCommandByValue(p_strCommand);
-                    break;
-                }
-            }
-
-            switch (l_objStatus)
-            {
-                case actionStatus.Success:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-                    break;
-                case actionStatus.PartialError:
-                case actionStatus.Error:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-                    break;
-                case actionStatus.None:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-                    break;
-            }
-
+			var l_objLift = m_objProjectorLifts.Find(lift => lift.LiftName == p_strSelectedLift);
+			if (l_objLift != null)
+			{
+				m_objLogger.logToMemory(string.Format("{0}: {1}: Lift Located.", l_strFunctionName, p_strSelectedLift));
+				l_objStatus = l_objLift.SendCommandByValue(p_strCommand);
+			}
+			m_objLogger.logToMemory(GetFormattedStatusLog(l_objStatus, l_strFunctionName, p_strSelectedLift, p_strCommand));
             return l_objStatus;
         }
 
-        public actionStatus SendMatrixCommandByValue(string p_strSelectedLift, string p_strDevice, string p_strSource, string p_strCommand = "3")
-        {
-            var l_strFunctionName = "SendMatrixCommandByValue()";
-            var l_objStatus = actionStatus.None;
-            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to send the following Command: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-            foreach (var l_objSwitcher in m_objMatrixSwitchers)
-            {
-                if (l_objSwitcher.SwitcherName == p_strSelectedLift)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Matrix Switcher Located.", l_strFunctionName, p_strSelectedLift));
-                    l_objStatus = l_objSwitcher.SendCommandByValueHTTP(p_strCommand, p_strDevice, p_strSource);
-                    break;
-                }
-            }
-
-            switch (l_objStatus)
-            {
-                case actionStatus.Success:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Successfully Sent: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-                    break;
-                case actionStatus.PartialError:
-                case actionStatus.Error:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Not Sent Successfully: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-                    break;
-                case actionStatus.None:
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Command Status Unknown: {2}", l_strFunctionName, p_strSelectedLift, p_strCommand));
-                    break;
-            }
-
-            return l_objStatus;
-        }
+		//m_objLogger.logToMemory(GetFormattedStatusLog(l_objStatus,l_strFunctionName, p_strSelectedTV, p_strCommand));
+		private string GetFormattedStatusLog(actionStatus pstatus, string pFunctionName, string pDevice, string pCommand)
+		{
+			var strReturn = "";
+			switch (pstatus)
+			{
+				case actionStatus.Success:
+					strReturn = string.Format("{0}: {1}: Command Successfully Sent: {2}", pFunctionName, pDevice, pCommand);
+					break;
+				case actionStatus.PartialError:
+				case actionStatus.Error:
+					strReturn = string.Format("{0}: {1}: Command Not Sent Successfully: {2}", pFunctionName, pDevice, pCommand);
+					break;
+				case actionStatus.None:
+					strReturn = string.Format("{0}: {1}: Command Status Unknown: {2}", pFunctionName, pDevice, pCommand);
+					break;
+			}
+			return strReturn;
+		}
 
         public List<string> ListAvailableCommandsByName(string p_strSelectedTV)
         {
@@ -1274,15 +1050,12 @@ namespace khVSAutomation
             var l_strFunctionName = "ListAvailableCommandsByName()";
             
             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Television.", l_strFunctionName, p_strSelectedTV));
-            foreach (var l_objTelevision in m_objTelevisions)
-            {
-                if (l_objTelevision.TelevisionName == p_strSelectedTV)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Television Located. Retrieving Commands", l_strFunctionName, p_strSelectedTV));
-                    l_lstrCommandList = l_objTelevision.getCommandNames();
-                    break;
-                }
-            }
+			var l_objTelevision = m_objTelevisions.Find(tv => tv.TelevisionName == p_strSelectedTV);
+			if (l_objTelevision != null)
+			{
+				m_objLogger.logToMemory(string.Format("{0}: {1}: Television Located. Retrieving Commands", l_strFunctionName, p_strSelectedTV));
+				l_lstrCommandList = l_objTelevision.getCommandNames();
+			}
             return l_lstrCommandList;
         }
 
@@ -1290,17 +1063,13 @@ namespace khVSAutomation
         {
             var l_lstrCommandList = new List<string>();
             var l_strFunctionName = "ListAvailableProjectorCommandsByName()";
-
             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Prjector.", l_strFunctionName, p_strSelectedProjector));
-            foreach (var l_objProjector in m_objProjectors)
-            {
-                if (l_objProjector.projectorName == p_strSelectedProjector)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Located. Retrieving Commands", l_strFunctionName, p_strSelectedProjector));
-                    l_lstrCommandList = l_objProjector.getCommandNames();
-                    break;
-                }
-            }
+			var l_objProjector = m_objProjectors.Find(proj => proj.projectorName == p_strSelectedProjector);
+			if (l_objProjector != null)
+			{
+				m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Located. Retrieving Commands", l_strFunctionName, p_strSelectedProjector));
+				l_lstrCommandList = l_objProjector.getCommandNames();
+			}
             return l_lstrCommandList;
         }
 
@@ -1310,33 +1079,12 @@ namespace khVSAutomation
             var l_strFunctionName = "ListAvailableLiftCommandsByName()";
 
             m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Prjector Lift.", l_strFunctionName, p_strSelectedProjectorLift));
-            foreach (var l_objLift in m_objProjectorLifts)
-            {
-                if (l_objLift.LiftName == p_strSelectedProjectorLift)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Lift Located. Retrieving Commands.", l_strFunctionName, p_strSelectedProjectorLift));
-                    l_lstrCommandList = l_objLift.getCommandNames();
-                    break;
-                }
-            }
-            return l_lstrCommandList;
-        }
-
-        public List<string> ListAvailableMatrixCommandsByName(string p_strSelectedMatrixSwitcher)
-        {
-            var l_lstrCommandList = new List<string>();
-            var l_strFunctionName = "ListAvailableMatrixCommandsByName()";
-
-            m_objLogger.logToMemory(string.Format("{0}: {1}: Attempting to Get the available commands for the Matrix Switcher.", l_strFunctionName, p_strSelectedMatrixSwitcher));
-            foreach (var l_objSwitcher in m_objMatrixSwitchers)
-            {
-                if (l_objSwitcher.SwitcherName == p_strSelectedMatrixSwitcher)
-                {
-                    m_objLogger.logToMemory(string.Format("{0}: {1}: Matrix Switcher Located. Retrieving Commands.", l_strFunctionName, p_strSelectedMatrixSwitcher));
-                    l_lstrCommandList = l_objSwitcher.getCommandNames();
-                    break;
-                }
-            }
+			var l_objLift = m_objProjectorLifts.Find(lift => lift.LiftName == p_strSelectedProjectorLift);
+			if (l_objLift != null)
+			{
+				m_objLogger.logToMemory(string.Format("{0}: {1}: Projector Lift Located. Retrieving Commands.", l_strFunctionName, p_strSelectedProjectorLift));
+				l_lstrCommandList = l_objLift.getCommandNames();
+			}
             return l_lstrCommandList;
         }
 
@@ -1351,12 +1099,7 @@ namespace khVSAutomation
         /// <returns></returns>
         public actionStatus registerTV_Part1(ref bool p_blnPinRequired, int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
-            var l_objStatus = actionStatus.None;
-
-            if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].registerTV_Step1(ref p_blnPinRequired);
-
-            return l_objStatus;
+			return (isDeviceConfigured(p_intTVID, DeviceTypes.Television)) ? m_objTelevisions[p_intTVID - 1].registerTV_Step1(ref p_blnPinRequired) : actionStatus.None;
         }
 
         public actionStatus registerTV_Part1(ref bool p_blnPinRequired, string p_strSelectedTV)
@@ -1365,21 +1108,14 @@ namespace khVSAutomation
             var l_strFunctonname = "registerTV_Part1";
             try 
             {
-                var l_blnTVFound = false;
-                foreach (var l_objTelevision in m_objTelevisions)
-                {
-                    if (l_objTelevision.TelevisionName == p_strSelectedTV)
-                    {
-                        l_blnTVFound = true;
-                        l_objStatus = l_objTelevision.registerTV_Step1(ref p_blnPinRequired);
-                        break;
-                    }
-                }
-                if (!l_blnTVFound)
-                {
-                    l_objStatus = actionStatus.Error;
-                    m_objLogger.logToMemory("Television " + p_strSelectedTV + " is not configured. Please check the configuration settings.", l_objStatus);
-                }
+				var l_objTelevision = m_objTelevisions.Find(tv => tv.TelevisionName == p_strSelectedTV);
+				if (l_objTelevision == null)
+				{
+					l_objStatus = actionStatus.Error;
+					m_objLogger.logToMemory("Television " + p_strSelectedTV + " is not configured. Please check the configuration settings.", l_objStatus);
+				}
+				else
+					l_objStatus = l_objTelevision.registerTV_Step1(ref p_blnPinRequired);
             }
             catch(Exception e)
             {
@@ -1400,13 +1136,8 @@ namespace khVSAutomation
         /// <returns></returns>
         public actionStatus RegisterTV1Step(int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
-            var l_objStatus = actionStatus.None;
             var l_blnSuccess = false;
-
-            if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].RegisterTV1Step(ref l_blnSuccess);
-
-            return l_objStatus;
+			return (isDeviceConfigured(p_intTVID, DeviceTypes.Television)) ? m_objTelevisions[p_intTVID - 1].RegisterTV1Step(ref l_blnSuccess) : actionStatus.None;
         }
 
         /// <summary>
@@ -1420,13 +1151,8 @@ namespace khVSAutomation
         /// <returns></returns>
         public actionStatus registerTV_Part2(string l_strPIN, int p_intTVID = 1, StringBuilder p_objProgress = null)
         {
-            var l_objStatus = actionStatus.None;
             var l_blnSuccess = false;
-
-            if (isDeviceConfigured(p_intTVID, DeviceTypes.Television))
-                l_objStatus = m_objTelevisions[p_intTVID - 1].registerTV_Step2(l_strPIN, ref l_blnSuccess);
-
-            return l_objStatus;
+            return (isDeviceConfigured(p_intTVID, DeviceTypes.Television)) ? m_objTelevisions[p_intTVID - 1].registerTV_Step2(l_strPIN, ref l_blnSuccess) : actionStatus.None;
         }
 
         public actionStatus registerTV_Part2(string l_strPIN, string p_strSelectedTV)
@@ -1437,21 +1163,14 @@ namespace khVSAutomation
 
             try
             {
-                var l_blnTVFound = false;
-                foreach (var l_objTelevision in m_objTelevisions)
-                {
-                    if (l_objTelevision.TelevisionName == p_strSelectedTV)
-                    {
-                        l_blnTVFound = true;
-                        l_objStatus = l_objTelevision.registerTV_Step2(l_strPIN, ref l_blnSuccess);
-                        break;
-                    }
-                }
-                if (!l_blnTVFound)
-                {
-                    l_objStatus = actionStatus.Error;
-                    m_objLogger.logToMemory("Television " + p_strSelectedTV + " is not configured. Please check the configuration settings.", l_objStatus);
-                }
+				var l_objTelevision = m_objTelevisions.Find(tv => tv.TelevisionName == p_strSelectedTV);
+				if (l_objTelevision == null)
+				{
+					l_objStatus = actionStatus.Error;
+					m_objLogger.logToMemory("Television " + p_strSelectedTV + " is not configured. Please check the configuration settings.", l_objStatus);
+				}
+				else
+					l_objStatus = l_objTelevision.registerTV_Step2(l_strPIN, ref l_blnSuccess);
             }
             catch (Exception e)
             {
@@ -1487,155 +1206,10 @@ namespace khVSAutomation
                     canPerform = ((m_objTelevisions.Count() > 0) && (p_intDeviceID <= m_objTelevisions.Count()) &&
                         m_objTelevisions[p_intDeviceID - 1].isDeviceConfigured()) ? true : false;
                     break;
-                case DeviceTypes.MatrixSwitcher:
-                    canPerform = ((m_objMatrixSwitchers.Count() > 0) && (p_intDeviceID <= m_objMatrixSwitchers.Count()) &&
-                        m_objMatrixSwitchers[p_intDeviceID - 1].isDeviceConfigured()) ? true : false;
-                    break;
             }
 
             return canPerform;
         }
-
-        public actionStatus changeMatrixSource(int p_intMatrixID ,SwitcherOutput p_objOutput, SwitcherAction p_objAction, StringBuilder p_objProgress = null)
-        {
-            var l_objStatus = actionStatus.None;
-            var l_strFunctionName = "changeMatrixSource";
-            bool l_blnLoggingProgress = (p_objProgress != null);
-
-            try
-            {
-                if (isDeviceConfigured(p_intMatrixID, DeviceTypes.MatrixSwitcher))
-                {
-                    if (l_blnLoggingProgress) p_objProgress.AppendFormat("Attempting to switch: Source = {0}, Input = {1}{2}", p_objAction, p_objOutput, Environment.NewLine);
-                    l_objStatus = m_objMatrixSwitchers[p_intMatrixID - 1].doSwitcherAction(p_objOutput, p_objAction);
-                    if (l_blnLoggingProgress) p_objProgress.AppendFormat("Switching Complete{0}", Environment.NewLine);
-                    l_objStatus = actionStatus.Success;
-                }
-            }
-            catch (Exception e)
-            {
-                l_objStatus = actionStatus.Error;
-                string exLog = string.Format("An Error Occurred while switching Matrix Source {0} for input {1}: {2}", p_objAction, p_objOutput, e.ToString());
-                m_objLogger.logToDB(exLog, actionStatus.Error, p_blnError_WriteMemoryToDB: true);
-                p_objProgress.AppendLine(exLog);
-            }
-            finally { m_objLogger.writePendingToDB(l_objStatus, p_strFunctionName: l_strFunctionName); }
-
-            return l_objStatus;
-        }
-
-
-        #endregion
-
-        #region Old Code()
-        /*        private static void loadConfigurations()
-        {
-            try
-            {
-                //load the config document
-                var l_strLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                l_strLocation = l_strLocation.Substring(0, l_strLocation.LastIndexOf("\\") + 1) + khVSAutomation.Properties.Settings.Default.ConfigFileName;
-                XPathDocument xpdConfig = new XPathDocument(l_strLocation);
-                XPathNavigator xpnConfigNav = xpdConfig.CreateNavigator();
-                XPathNodeIterator l_objNodes = xpnConfigNav.Select("//Automation/Televisions/Television");
-
-                m_objTelevisions = new List<Television>();
-                foreach (XPathNavigator l_xmlTelevision in l_objNodes)
-                {
-                    string l_strName = l_xmlTelevision.GetAttribute("Name", string.Empty);
-                    string l_strIP = l_xmlTelevision.GetAttribute("IP", string.Empty);
-                    string l_strMAC = l_xmlTelevision.GetAttribute("MAC", string.Empty);
-                    m_objTelevisions.Add(new Television(l_strName, l_strIP, l_strMAC));
-                }
-
-                l_objNodes = xpnConfigNav.Select("//Automation/Projectors/Projector");
-                m_objProjectors = new List<Projector>();
-                foreach (XPathNavigator l_xmlProjector in l_objNodes)
-                {
-                    string l_strName = l_xmlProjector.GetAttribute("Name", string.Empty);
-                    string l_strIP = l_xmlProjector.GetAttribute("IP", string.Empty);
-                    string l_strLiftAssociation = l_xmlProjector.GetAttribute("LiftAssociation", string.Empty);
-
-                    m_objProjectors.Add(new Projector(l_strName, l_strIP, l_strLiftAssociation));
-                }
-
-                l_objNodes = xpnConfigNav.Select("//Automation/ProjectorLifts/ProjectorLift");
-                m_objProjectorLifts = new List<ProjectorLift>();
-                foreach (XPathNavigator l_xmlProjectorLifts in l_objNodes)
-                {
-                    string l_strName = l_xmlProjectorLifts.GetAttribute("Name", string.Empty);
-                    string l_strCOMPort = l_xmlProjectorLifts.GetAttribute("COMPort", string.Empty);
-                    int l_intMoveTime = Int32.Parse(l_xmlProjectorLifts.GetAttribute("MoveTime", string.Empty));
-
-                    m_objProjectorLifts.Add(new ProjectorLift(l_strName, l_strCOMPort, l_intMoveTime));
-                }
-            }
-            catch (System.Exception ex)
-            {
-                throw new System.Exception("loadConfigurations() ERROR: " + ex.ToString());
-            }
-        }
- 
-        public async void logToDB(string p_strDescription, actionStatus p_objStatus = actionStatus.None, string p_strUpdatedBy = "GeneralUser")
-        {
-            //Let's do the work here so as not to repeat ourselves throughout the project
-            bool l_blnAddToLog = false;
-            if ((m_objLogLevel == logLevel.All) || 
-                (m_objLogLevel == logLevel.ErrorOnly && 
-                (p_objStatus == actionStatus.PartialError || 
-                p_objStatus == actionStatus.Error))) l_blnAddToLog = true;
-
-            if (!(myDB == null) && l_blnAddToLog)
-            {
-                //Only Set Once - This will help in asyncronously getting logs later
-                if (m_cstrSessionID == "") m_cstrSessionID = Guid.NewGuid().ToString();
-                myDB.tblOperationStatus.Add(new tblOperationStatu {SessionID = m_cstrSessionID, 
-                                                                    StatusID = (int)p_objStatus, 
-                                                                    Description = p_strDescription, 
-                                                                    UpdatedBy = p_strUpdatedBy, 
-                                                                    UpdatedDateTime = DateTime.Now.ToUniversalTime()});
-                int x = await myDB.SaveChangesAsync();
-            }
-        }
-         * 
-        public string displaySettings()
-        {
-            //NOTE Logging both to DB and returning the same thing via a string/stringbuilder
-            //The Hopes is that we will be able to move to asynchronously reading/writing to the DB for realtime logs
-            StringBuilder myOutput = new StringBuilder();
-            myOutput.AppendLine("==============CURRENT APPLICATION SETTINGS==============");
-            myOutput.AppendLine("-----Televisions-----");
-            int i = 0;
-            foreach (Television objTempTV in m_objTelevisions)
-            {
-                i++;
-                myOutput.AppendLine("TV #" + i.ToString() + " Information");
-                myOutput.AppendLine(objTempTV.GetDeviceInfo());
-            }
-
-            i = 0;
-            myOutput.AppendLine("-----Projectors-----");
-            foreach (Projector objTempProj in m_objProjectors)
-            {
-                i++;
-                myOutput.AppendLine("Projector #" + i.ToString() + " Information");
-                myOutput.AppendLine(objTempProj.GetDeviceInfo());
-            }
-
-            i = 0;
-            myOutput.AppendLine("-----Projector Lifts-----");
-            foreach (ProjectorLift objTempLift in m_objProjectorLifts)
-            {
-                i++;
-                myOutput.AppendLine("Lift #" + i.ToString() + " Information");
-                myOutput.AppendLine(objTempLift.GetDeviceInfo());
-            }
-            myOutput.AppendLine("==============END OF APPLICATION SETTINGS===============");
-
-            logToDB(myOutput.ToString());
-            return myOutput.ToString();
-        }
-    */
         #endregion
 
     }
